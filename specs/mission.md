@@ -13,6 +13,13 @@ at once**:
    is one of several works tracked for job applications in `~/Desktop/studybook` — it needs to stand on its
    own as evidence of both ML depth and engineering discipline.
 
+This isn't a speculative choice of problem — the original thesis's own conclusion states *"working towards
+neural ensembles and graph neural networks seems to be the natural prosecution of the project,"* after a
+literature review that had already surveyed core GNN papers but deliberately deferred them. This rework is
+that stated next step. See `wiki/original-project/` for the full grounding, especially
+`limitations-and-motivation-for-gnn.md` for why this needs to be a genuine modernization (heterogeneous,
+temporal-aware graph learning) rather than a same-methods-different-library port of 2019 techniques.
+
 ## Core Goals
 
 1. **Understand before implementing.** Every architecture used in `src/graph_ml/` has a companion notebook

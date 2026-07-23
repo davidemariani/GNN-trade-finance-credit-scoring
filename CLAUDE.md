@@ -12,7 +12,11 @@ skip this even for a small-seeming request.
 Also check, if relevant to the task at hand:
 - `specs/mission.md`, `specs/tech-stack.md`, `specs/roadmap.md` — the full plan and its rationale.
 - `specs/instructions/` — recurring workflows: adding an architecture, notebook standards, testing
-  standards. Follow these before adding a new architecture, notebook, or piece of `src/graph_ml/` code.
+  standards, maintaining the wiki. Follow these before adding a new architecture, notebook, or piece of
+  `src/graph_ml/` code.
+- `wiki/` — the knowledge base. Check `wiki/original-project/` before touching anything specific to the
+  original 2019 thesis (terminology, data, methodology, results), and `wiki/gnn-concepts/` for GNN
+  concepts already covered. Don't re-derive or guess something that's already written down here.
 - `BACKLOG.md` — current work items (To Do / In Progress / Done). Update it as work starts/finishes.
 - `USAGE.md` — how to set up the environment and run things in this repo.
 

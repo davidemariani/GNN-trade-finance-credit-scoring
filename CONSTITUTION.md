@@ -21,26 +21,34 @@ it needs to be good enough to show, not just good enough to work. Full detail on
 
 ## 0. Where this came from
 
-`networkAnalysisForML` was a Msc Data Science thesis project (Davide Mariani, Birkbeck College,
-University of London, in collaboration with Tradeteq Ltd; supervisors Prof. George D. Magoulas and
-Michael Boguslavsky). It:
-
-- built a graph of buyer/seller trade-finance transactions using `networkx`
-  (`scripts_network/network_modelling.py`, `scripts_network/network_bond_graph.py` — the latter borrows
-  effort/flow/energy concepts from bond-graph theory to hand-engineer node/edge features),
-- ran feature engineering pipelines over that graph plus the raw instrument-level transaction data
-  (`scripts_preproc/`),
-- fed the resulting tabular features into classical models — `SGDClassifier`, `RandomForestClassifier`
-  (`scripts_ml/models_utils.py`), plus MLP and RNN notebooks — to predict credit/default-related outcomes
-  at the transaction level,
-- tracked experiments with `mlflow` and exposed results via a `dash`-based dashboard.
+`networkAnalysisForML` was Davide Mariani's 2019 Msc Data Science thesis (Birkbeck College, University of
+London, in collaboration with Tradeteq Ltd; supervisors Prof. George D. Magoulas and Michael Boguslavsky),
+titled *"Networked Data and Machine Learning for Supply Chain Predictive Modelling."* It built a buyer/
+seller trade-finance transaction network with `networkx`, hand-engineered "bond graph theory" features
+(effort/flow/energy analogies — see `wiki/original-project/glossary.md`) on top of it, and fed the result
+into classical ML (SGD, Random Forest) and neural models (MLP, RNN) to predict three independent credit
+risk events — impairment, 90-day delay, 180-day delay — achieving best test AUCs of 0.954 / 0.861 / 0.884
+respectively. Full detail (terminology, data, network construction, feature engineering, validation
+methodology, results) is written up in **`wiki/original-project/`** — read that, not this summary, before
+doing any work that touches the original project's specifics.
 
 This project does **not** vendor that code. The original repo remains public at the URL above as the
-historical reference; consult it directly (or ask the owner for context) rather than assuming behavior.
-The idea being carried forward is the *problem* (predict trade-finance/credit outcomes from a network of
-buyer/seller transactions) and the *data shape* (a transaction graph), not the original implementation.
-The bet of this rework is that a GNN can learn useful structural representations directly from the graph,
-reducing or replacing the hand-engineered bond-graph feature step.
+historical reference; the derived knowledge from its thesis report lives in `wiki/original-project/`.
+
+**The thesis's own conclusion explicitly points here**: *"working towards neural ensembles and graph
+neural networks seems to be the natural prosecution of the project."* This rework is that stated next
+step, not a speculative reapplication of GNNs to an unrelated problem.
+
+**Important**: this is a 2019 project. Its own limitations (feature selection, bond-graph metric choices,
+neural architecture maturity — see `wiki/original-project/limitations-and-motivation-for-gnn.md`) are one
+thing; separately, graph ML itself has moved on since 2019 in ways that matter for *how* this rework
+should be designed, not just which library implements it — notably around heterogeneous graphs (buyers/
+sellers/hybrids are structurally different node types) and temporal/dynamic graph learning (the network is
+explicitly non-stationary). Treat the original thesis as a grounded reference point and a baseline to
+honestly compare against — not a specification to reproduce with different tooling. See
+`wiki/original-project/limitations-and-motivation-for-gnn.md` for the full reasoning, and make the actual
+architecture/approach decision explicitly when the roadmap reaches that stage, informed by, but not
+pre-committed by, the original design.
 
 ---
 
@@ -68,8 +76,9 @@ This folder must stay fully isolated from the rest of the machine, the same way
 ## 2. Core principles
 
 1. **Honest benchmarking.** Any comparison between the new GNN approach and the original classical
-   models must be run, not assumed or invented. If a fair comparison isn't possible (e.g. the original
-   dataset isn't available), say so explicitly rather than fabricating numbers.
+   models (see `wiki/original-project/results.md` for the numbers to compare against) must be run, not
+   assumed or invented. If a fair comparison isn't possible (e.g. the original dataset isn't available),
+   say so explicitly rather than fabricating numbers.
 2. **No data or secrets in git.** Raw transaction data, trained model weights, and any credentials never
    get committed — `.gitignore` already excludes `data/`, `*.pt`/`*.pth`/`*.ckpt`, `mlruns/`, `wandb/`,
    `.env*`. If real trade-finance data is ever used, treat it as confidential and keep it entirely local.
@@ -106,7 +115,10 @@ graph_ml/
 │   ├── mission.md               (what this project is for and who it's for)
 │   ├── tech-stack.md             (technology choices and isolation setup)
 │   ├── roadmap.md                 (phased plan, checked off as completed)
-│   └── instructions/               (recurring workflows: new architecture, notebook standards, testing)
+│   └── instructions/               (recurring workflows: new architecture, notebook standards, testing, wiki)
+├── wiki/                     ← growing knowledge base (agent + human readable), see wiki/README.md
+│   ├── original-project/        (everything about the 2019 thesis this reworks)
+│   └── gnn-concepts/              (growing GNN reference, fills in alongside the roadmap)
 ├── pyproject.toml            ← dependencies (managed via uv)
 ├── uv.lock
 ├── .python-version
@@ -128,6 +140,8 @@ tests under `tests/` for anything in `src/graph_ml/` that isn't purely explorato
 ## 4. Where to look next
 
 - `specs/mission.md`, `specs/tech-stack.md`, `specs/roadmap.md` for the full plan and its rationale.
-- `specs/instructions/` for how to add an architecture, write a notebook, or write a test.
+- `specs/instructions/` for how to add an architecture, write a notebook, write a test, or maintain the wiki.
+- `wiki/` for the knowledge base: everything about the original 2019 project, and the growing GNN
+  concepts reference.
 - `BACKLOG.md` for what's currently being worked on and what's next.
 - `USAGE.md` for how to set up the environment and run tests/notebooks/scripts.

@@ -22,6 +22,9 @@ data/
 mlruns/
 wandb/
 
+# Local-only source reference material (not for public publication)
+wiki/original-project/source/
+
 # OS
 .DS_Store
 Thumbs.db

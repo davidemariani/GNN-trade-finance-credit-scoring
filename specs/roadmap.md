@@ -18,20 +18,23 @@ chat history.
 - [x] Verified `torch` + `torch_geometric` import and MPS (Apple Silicon GPU) availability ✓
 - [x] Skeleton layout: `src/graph_ml/`, `notebooks/{00_foundations,01_architectures,02_project}/`, `tests/`, `data/` (gitignored) ✓
 - [x] Governing docs written: `CONSTITUTION.md`, `CLAUDE.md`, `BACKLOG.md`, `USAGE.md`, `README.md`, `specs/` ✓
-- [ ] Public GitHub repo created (`davidemariani/GNN-trade-finance-credit-scoring`), initial commit pushed
+- [x] Public GitHub repo created (`davidemariani/GNN-trade-finance-credit-scoring`), initial commit pushed ✓
+- [x] `wiki/` knowledge base scaffolded (`wiki/README.md`, `wiki/original-project/`, `wiki/gnn-concepts/`) ✓
 
 ---
 
-## Phase 1 — Original Project Study
+## Phase 1 — Original Project Study ✓
 
 **Goal:** Understand exactly what's being reworked before writing new code.
 
-- [ ] Write up a short, honest summary (in a notebook or `specs/` note) of the original
-      `networkAnalysisForML` pipeline: how the transaction graph was built, what bond-graph features
-      were engineered, what models were used, and what results were reported — this grounds the "before"
-      side of the eventual comparison.
-- [ ] Identify what data was used originally and whether any equivalent is available (real data was
-      likely private/thesis-specific) — decide the dataset strategy for this rework (see Phase 3).
+- [x] Deep-read the original thesis report (`wiki/original-project/source/Report.pdf`, local-only) and
+      wrote up a full summary across `wiki/original-project/`: `overview.md`, `glossary.md`,
+      `data-and-network-construction.md`, `feature-engineering.md`, `modelling-and-validation.md`,
+      `results.md`, `limitations-and-motivation-for-gnn.md` ✓
+- [ ] Confirm whether the original anonymized dataset (`00_transactionsdf_simNames.pkl`, 163,437 rows) is
+      still accessible to the owner, or whether this rework needs a different real/public dataset or a
+      synthetic buyer/seller transaction graph generator — **open question, needs the owner's input, not
+      a guess.** See Phase 3.
 
 ---
 
@@ -56,8 +59,10 @@ chat history.
 
 **Goal:** A working, honest baseline before any GNN is judged against it.
 
-- [ ] Decide the dataset: a public trade-finance/transaction-network dataset, or a synthetic buyer/seller
-      transaction graph generator with realistic structure — document the choice and its limitations.
+- [ ] Decide the dataset (see Phase 1's open question first: is the original anonymized data still
+      accessible?) — options are the original data if available, a public trade-finance/transaction-network
+      dataset, or a synthetic buyer/seller transaction graph generator with realistic structure. Document
+      the choice and its limitations in `wiki/`.
 - [ ] Implement graph construction (`src/graph_ml/data/`): nodes (buyers/sellers), edges (transactions),
       raw attributes → node/edge features. Tests in `tests/`.
 - [ ] Precisely define the prediction task (node, edge/link, or graph-level) and justify the choice against
@@ -70,13 +75,22 @@ chat history.
 ## Phase 4 — GNN Architectures (`notebooks/01_architectures/`, `src/graph_ml/models/`)
 
 **Goal:** Implement, understand, and apply a progression of architectures, each documented before/alongside
-its use in the applied project.
+its use in the applied project. The foundational progression below is a *learning path* — the model(s)
+actually applied to the project's task should be chosen deliberately for fit, not just picked because they
+were learned first (see `wiki/original-project/limitations-and-motivation-for-gnn.md`: this graph is
+heterogeneous — buyers/sellers/hybrids are structurally different node types — and temporal/non-stationary,
+which a plain homogeneous, static-graph architecture doesn't capture).
 
 - [ ] GCN (Kipf & Welling) — first spatial convolution, simplest baseline GNN.
 - [ ] GraphSAGE — inductive setting, neighbor sampling.
 - [ ] GAT — attention-based neighbor weighting.
 - [ ] GIN — expressiveness ceiling (Weisfeiler-Lehman test), why it matters.
-- [ ] Apply the strongest candidate(s) to the project's prediction task; compare honestly against the
+- [ ] Explicit design decision: choose the architecture family for the applied model, informed by the
+      foundational progression above but decided on fit to this graph's heterogeneous + temporal nature
+      (e.g. relation-aware/heterogeneous message passing, and/or a temporal graph learning approach) —
+      not defaulted to whichever foundational architecture came last. Document the decision and rationale
+      in `wiki/gnn-concepts/` before implementing it.
+- [ ] Apply the chosen candidate(s) to the project's prediction task; compare honestly against the
       Phase 3 baseline and record what did/didn't help and why.
 
 ---

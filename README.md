@@ -19,6 +19,9 @@ This repo has two goals, deliberately pursued together:
 
 - **`specs/`** — the plan and its rationale: `mission.md`, `tech-stack.md`, `roadmap.md`, and
   `instructions/` for recurring workflows (adding an architecture, writing a notebook, writing a test).
+- **`wiki/`** — a growing knowledge base: `original-project/` documents the 2019 thesis this reworks in
+  full (terminology, data, methodology, results, and why it needs genuine modernization, not a same-methods
+  port), and `gnn-concepts/` is a lookup-style GNN reference that fills in alongside the roadmap.
 - **`notebooks/00_foundations/`** — GNN fundamentals (graph representations, message passing, spectral vs.
   spatial convolutions, over-smoothing), independent of any specific dataset.
 - **`notebooks/01_architectures/`** — one notebook per architecture, explaining the idea and math with a
