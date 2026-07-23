@@ -31,7 +31,8 @@ This repo has two goals, deliberately pursued together:
 - **`src/graph_ml/`** — the production-shaped package (typed, tested) that the notebooks import from.
 - **`tests/`** — `pytest` coverage for everything in `src/graph_ml/`.
 
-See [`CONSTITUTION.md`](CONSTITUTION.md) for the full governing rationale and working principles,
+See [`STUDYBOOK.md`](STUDYBOOK.md) for a fast-orientation summary and decision log,
+[`CONSTITUTION.md`](CONSTITUTION.md) for the full governing rationale and working principles,
 [`BACKLOG.md`](BACKLOG.md) for current work, and [`USAGE.md`](USAGE.md) for setup and common commands.
 
 ## Quick start

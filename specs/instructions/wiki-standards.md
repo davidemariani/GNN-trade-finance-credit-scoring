@@ -10,10 +10,13 @@ living documentation, not a one-time dump.
   lookup entry under `wiki/gnn-concepts/`. Don't pre-write stub pages with no real content — the wiki
   should reflect what's actually been learned, not a wishlist (the wishlist lives in
   `wiki/gnn-concepts/README.md` and `specs/roadmap.md`).
-- **A design decision gets made** — e.g. choosing a dataset, choosing which architecture(s) to apply to
-  the project's actual task, choosing a validation strategy. Record the decision and its rationale in the
-  relevant page (or a new one under `wiki/original-project/` or a future `wiki/this-project/` if the
-  decision is about the rework itself rather than the original thesis).
+- **A design decision, discovery, or significant change gets made** — e.g. choosing a dataset, choosing
+  which architecture(s) to apply to the project's actual task, choosing a validation strategy, finding
+  something unexpected in the data. Record the decision/finding and its rationale in the relevant page
+  (`wiki/original-project/` if it's about the original thesis, `wiki/this-project/` if it's about this
+  rework), **and** add a one-line pointer to it in `STUDYBOOK.md`'s decision log — see
+  `specs/instructions/studybook-standards.md`. Per `CONSTITUTION.md` §2.8, both updates happen in the same
+  turn as the decision, not deferred.
 - **Something in the wiki turns out to be wrong or outdated** — fix it in place. Don't leave stale content
   next to new content; a wiki that contradicts itself is worse than no wiki.
 

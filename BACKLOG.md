@@ -22,22 +22,31 @@ For the full phased plan and rationale, see `specs/roadmap.md`.
       (gitignored) — see `wiki/this-project/data-availability.md` for the full inventory (raw
       transactions through the final bond-graph feature set, plus a 3,217-column temporal snapshot file).
       No public/synthetic substitute needed.
+- [x] Graph design decided: heterogeneous, instrument-centric, static-first — see
+      `wiki/this-project/graph-design.md` for full schema and rationale.
+- [x] Task framing decided: node classification on instrument nodes, **impairment target only for v1**
+      (p90/p180 deferred until the single-target pipeline is validated end-to-end).
+- [x] Node feature policy decided: instrument nodes get raw Tier-0 attributes; buyer/seller nodes get
+      **pure learned embeddings**, no hand-computed intrinsic features (avoids smuggling leakage in).
+- [ ] Implement graph construction (`src/graph_ml/data/`): build `torch_geometric.data.HeteroData` from
+      `00_transactionsdf_simNames.pkl` / `01_instrumentsdf.pkl` per `wiki/this-project/graph-design.md`'s
+      schema. Tests in `tests/`.
+- [ ] Implement the **inductive** train/test split (train subgraph = instruments before cutoff T +
+      buyer/seller nodes they touch; eval = post-T instrument nodes attached to the trained graph) — this
+      is not optional, it's how the graph-design doc's leakage fix actually gets built. Pick/derive cutoff
+      T (original used 30 Apr 2018 for impairment).
 - [ ] Understand `04_network_snapshots.pkl`'s exact snapshot semantics (what time window each `sshot_N`
-      covers) — the strongest candidate basis for temporal graph construction.
-- [ ] Implement graph construction from transaction data (`00_transactionsdf_simNames.pkl` /
-      `01_instrumentsdf.pkl`), with tests.
-- [ ] Precisely define the prediction task (node / edge-link / graph-level) — three independent targets
-      exist (impairment 2.06% positive, p90 7.01%, p180 6.02% — real, confirmed class imbalance, see
-      `wiki/original-project/glossary.md` and `wiki/this-project/data-availability.md`); decide whether
-      the rework keeps all three or focuses on one first.
+      covers) — deferred until temporal structure is added (see `specs/roadmap.md` Phase 4/beyond), not
+      needed for the static v1 graph.
 - [ ] Reproduce a classical baseline (logistic regression / random forest) for fair comparison — target
-      numbers to compare against are in `wiki/original-project/results.md` (RF 0.954 / 0.861, MLP 0.884).
+      numbers to compare against are in `wiki/original-project/results.md` (RF 0.954 AUC for impairment).
 - [ ] Carry forward the time-leak-aware validation discipline from `wiki/original-project/modelling-and-validation.md`
-      — a GNN can leak future graph structure into a node embedding just as easily as a hand-engineered
-      feature could.
+      — addressed structurally via the inductive split above, not just a metrics-reporting concern.
 
 **Architectures** (`notebooks/01_architectures/`, `src/graph_ml/models/`)
 - [ ] GCN, GraphSAGE, GAT, GIN — foundational learning progression (see `specs/roadmap.md` Phase 4).
+      GraphSAGE has a concrete extra motivation here beyond "next in the sequence": its native inductive
+      setting matches the graph-design doc's leakage fix directly (`wiki/this-project/graph-design.md`).
 - [ ] Explicit design decision (with rationale recorded in `wiki/gnn-concepts/`) on what architecture
       family actually gets applied to the project task, given the graph's heterogeneous + temporal nature
       — not just whichever foundational architecture was learned last. See
@@ -62,3 +71,6 @@ _(nothing yet)_
       temporal graph learning) rather than reproducing the 2019 methodology as-is.
 - [x] Confirmed real anonymized data is available locally (`data/`, gitignored) across every original
       pipeline stage; documented in `wiki/this-project/data-availability.md`.
+- [x] Decided v1 graph design (heterogeneous, instrument-centric, static, inductive split), task framing
+      (node classification, impairment-only first), and node feature policy (pure learned embeddings for
+      buyer/seller nodes) — `wiki/this-project/graph-design.md`.

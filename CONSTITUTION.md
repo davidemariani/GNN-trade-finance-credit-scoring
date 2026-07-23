@@ -1,8 +1,8 @@
 # Constitution — graph-ml
 
 This file governs how this folder works. It applies to any agent (Claude, another AI assistant, or the
-human owner) operating in this workspace. If you are an agent picking this up cold: **read this file in
-full before creating, editing, or moving anything here.**
+human owner) operating in this workspace. If you are an agent picking this up cold: **read `STUDYBOOK.md`
+first for fast orientation, then this file in full before creating, editing, or moving anything here.**
 
 Owner: Davide Mariani. Purpose: rework the original
 [`networkAnalysisForML`](https://github.com/davidemariani/networkAnalysisForML) project — a buyer/seller
@@ -99,6 +99,13 @@ This folder must stay fully isolated from the rest of the machine, the same way
 7. **Test what you build.** Everything in `src/graph_ml/` gets a test in `tests/` — see
    `specs/instructions/testing-standards.md`. This is a portfolio piece; untested code undercuts the
    engineering-discipline half of the point.
+8. **Record significant developments as they happen, not after the fact.** Any real decision, discovery,
+   or change of direction (a design choice, a data finding, a result, a scope change) gets written into
+   **both** `wiki/` (the full detail, in the appropriate page) **and** `STUDYBOOK.md` (a one-line entry in
+   the decision log with a pointer to the detail) in the same turn it's made — not deferred, not left only
+   in chat history. See `specs/instructions/wiki-standards.md` and `specs/instructions/studybook-standards.md`.
+   This is the mechanism that makes the rest of this file's claims about specs-driven development and
+   documentation actually true over time, rather than aspirational.
 
 ---
 
@@ -106,8 +113,9 @@ This folder must stay fully isolated from the rest of the machine, the same way
 
 ```
 graph_ml/
-├── CONSTITUTION.md          ← this file — read first
-├── CLAUDE.md                ← pointer file for Claude Code, read second
+├── STUDYBOOK.md              ← fast orientation + decision log — read this first
+├── CONSTITUTION.md          ← this file — read second, in full
+├── CLAUDE.md                ← pointer file for Claude Code
 ├── BACKLOG.md                ← current work items (To Do / In Progress / Done)
 ├── USAGE.md                  ← environment setup and common commands
 ├── README.md                 ← public-facing, portfolio-facing project description
@@ -115,7 +123,7 @@ graph_ml/
 │   ├── mission.md               (what this project is for and who it's for)
 │   ├── tech-stack.md             (technology choices and isolation setup)
 │   ├── roadmap.md                 (phased plan, checked off as completed)
-│   └── instructions/               (recurring workflows: new architecture, notebook standards, testing, wiki)
+│   └── instructions/               (recurring workflows: new architecture, notebook standards, testing, wiki, studybook)
 ├── wiki/                     ← growing knowledge base (agent + human readable), see wiki/README.md
 │   ├── original-project/        (everything about the 2019 thesis this reworks)
 │   ├── gnn-concepts/              (growing GNN reference, fills in alongside the roadmap)
@@ -140,9 +148,11 @@ tests under `tests/` for anything in `src/graph_ml/` that isn't purely explorato
 
 ## 4. Where to look next
 
+- `STUDYBOOK.md` first, always — fast orientation and the running decision log, with pointers to detail.
 - `specs/mission.md`, `specs/tech-stack.md`, `specs/roadmap.md` for the full plan and its rationale.
-- `specs/instructions/` for how to add an architecture, write a notebook, write a test, or maintain the wiki.
-- `wiki/` for the knowledge base: everything about the original 2019 project, and the growing GNN
-  concepts reference.
+- `specs/instructions/` for how to add an architecture, write a notebook, write a test, or maintain the
+  wiki and `STUDYBOOK.md`.
+- `wiki/` for the knowledge base: everything about the original 2019 project, decisions/facts specific to
+  this rework, and the growing GNN concepts reference.
 - `BACKLOG.md` for what's currently being worked on and what's next.
 - `USAGE.md` for how to set up the environment and run tests/notebooks/scripts.
