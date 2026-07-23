@@ -118,7 +118,8 @@ graph_ml/
 │   └── instructions/               (recurring workflows: new architecture, notebook standards, testing, wiki)
 ├── wiki/                     ← growing knowledge base (agent + human readable), see wiki/README.md
 │   ├── original-project/        (everything about the 2019 thesis this reworks)
-│   └── gnn-concepts/              (growing GNN reference, fills in alongside the roadmap)
+│   ├── gnn-concepts/              (growing GNN reference, fills in alongside the roadmap)
+│   └── this-project/               (decisions/facts specific to this rework, e.g. data availability)
 ├── pyproject.toml            ← dependencies (managed via uv)
 ├── uv.lock
 ├── .python-version

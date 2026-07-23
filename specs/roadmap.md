@@ -19,7 +19,7 @@ chat history.
 - [x] Skeleton layout: `src/graph_ml/`, `notebooks/{00_foundations,01_architectures,02_project}/`, `tests/`, `data/` (gitignored) ✓
 - [x] Governing docs written: `CONSTITUTION.md`, `CLAUDE.md`, `BACKLOG.md`, `USAGE.md`, `README.md`, `specs/` ✓
 - [x] Public GitHub repo created (`davidemariani/GNN-trade-finance-credit-scoring`), initial commit pushed ✓
-- [x] `wiki/` knowledge base scaffolded (`wiki/README.md`, `wiki/original-project/`, `wiki/gnn-concepts/`) ✓
+- [x] `wiki/` knowledge base scaffolded (`wiki/README.md`, `wiki/original-project/`, `wiki/gnn-concepts/`, `wiki/this-project/`) ✓
 
 ---
 
@@ -31,10 +31,9 @@ chat history.
       wrote up a full summary across `wiki/original-project/`: `overview.md`, `glossary.md`,
       `data-and-network-construction.md`, `feature-engineering.md`, `modelling-and-validation.md`,
       `results.md`, `limitations-and-motivation-for-gnn.md` ✓
-- [ ] Confirm whether the original anonymized dataset (`00_transactionsdf_simNames.pkl`, 163,437 rows) is
-      still accessible to the owner, or whether this rework needs a different real/public dataset or a
-      synthetic buyer/seller transaction graph generator — **open question, needs the owner's input, not
-      a guess.** See Phase 3.
+- [x] Confirmed the original anonymized dataset **is** accessible — the owner has the full original
+      pipeline artifacts (raw transactions through final bond-graph features, plus a temporal snapshot
+      file) locally in `data/` (gitignored). See `wiki/this-project/data-availability.md`. ✓
 
 ---
 
@@ -59,16 +58,18 @@ chat history.
 
 **Goal:** A working, honest baseline before any GNN is judged against it.
 
-- [ ] Decide the dataset (see Phase 1's open question first: is the original anonymized data still
-      accessible?) — options are the original data if available, a public trade-finance/transaction-network
-      dataset, or a synthetic buyer/seller transaction graph generator with realistic structure. Document
-      the choice and its limitations in `wiki/`.
-- [ ] Implement graph construction (`src/graph_ml/data/`): nodes (buyers/sellers), edges (transactions),
-      raw attributes → node/edge features. Tests in `tests/`.
+- [x] Dataset decided: the real anonymized pipeline data in `data/` (see
+      `wiki/this-project/data-availability.md`) — no public/synthetic substitute needed. ✓
+- [ ] Understand `04_network_snapshots.pkl`'s exact snapshot semantics before relying on it for temporal
+      graph construction.
+- [ ] Implement graph construction (`src/graph_ml/data/`): nodes (buyers/sellers/hybrids), edges (trade
+      relationships), raw attributes → node/edge features, built from `00_transactionsdf_simNames.pkl` /
+      `01_instrumentsdf.pkl`. Tests in `tests/`.
 - [ ] Precisely define the prediction task (node, edge/link, or graph-level) and justify the choice against
-      what the original project did.
+      what the original project did. Account for real, confirmed class imbalance (impairment 2.06%, p90
+      7.01%, p180 6.02% positive).
 - [ ] Reproduce a classical baseline (logistic regression / random forest on simple graph features) —
-      this is the number every GNN result gets compared against.
+      this is the number every GNN result gets compared against (target: `wiki/original-project/results.md`).
 
 ---
 

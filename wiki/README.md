@@ -20,6 +20,9 @@ See `specs/instructions/wiki-standards.md` for how and when to add to it.
   this project, written as lookup-style entries (definition, intuition, when it matters) that complement
   the deeper, code-driven treatment in `notebooks/00_foundations/` and `notebooks/01_architectures/`.
   Starts empty/stubbed and fills in alongside the roadmap's Phase 2/4 work.
+- **`this-project/`** — decisions and facts specific to *this rework* (not the original thesis) that
+  don't belong in `specs/` (which is the plan) or a notebook (which is the how) — e.g. confirmed data
+  availability, dataset-specific quirks discovered while building.
 
 ## How agents should use this
 

@@ -8,10 +8,6 @@ For the full phased plan and rationale, see `specs/roadmap.md`.
 
 ## To Do
 
-**Open question — needs owner input, not a guess**
-- [ ] Is the original anonymized dataset (`00_transactionsdf_simNames.pkl`, 163,437 rows, Aug 2013-Sep
-      2018) still accessible? This determines the whole Phase 3 dataset strategy below.
-
 **Study & foundations** (`notebooks/00_foundations/`)
 - [ ] Graph representation basics (adjacency matrix, edge list, `torch_geometric.data.Data`)
 - [ ] Message-passing framework (aggregate-and-update, permutation invariance)
@@ -22,11 +18,18 @@ For the full phased plan and rationale, see `specs/roadmap.md`.
 - [ ] Temporal / dynamic graph learning (the transaction network is explicitly non-stationary)
 
 **Baseline & data pipeline** (`src/graph_ml/`, `notebooks/02_project/`)
-- [ ] Decide the dataset (see open question above) and document the choice + limitations in `wiki/`.
-- [ ] Implement graph construction from transaction data, with tests.
+- [x] Dataset decision resolved: the owner has the real anonymized pipeline artifacts locally in `data/`
+      (gitignored) — see `wiki/this-project/data-availability.md` for the full inventory (raw
+      transactions through the final bond-graph feature set, plus a 3,217-column temporal snapshot file).
+      No public/synthetic substitute needed.
+- [ ] Understand `04_network_snapshots.pkl`'s exact snapshot semantics (what time window each `sshot_N`
+      covers) — the strongest candidate basis for temporal graph construction.
+- [ ] Implement graph construction from transaction data (`00_transactionsdf_simNames.pkl` /
+      `01_instrumentsdf.pkl`), with tests.
 - [ ] Precisely define the prediction task (node / edge-link / graph-level) — three independent targets
-      exist in the original (impairment / p90 / p180, see `wiki/original-project/glossary.md`); decide
-      whether the rework keeps all three or focuses on one first.
+      exist (impairment 2.06% positive, p90 7.01%, p180 6.02% — real, confirmed class imbalance, see
+      `wiki/original-project/glossary.md` and `wiki/this-project/data-availability.md`); decide whether
+      the rework keeps all three or focuses on one first.
 - [ ] Reproduce a classical baseline (logistic regression / random forest) for fair comparison — target
       numbers to compare against are in `wiki/original-project/results.md` (RF 0.954 / 0.861, MLP 0.884).
 - [ ] Carry forward the time-leak-aware validation discipline from `wiki/original-project/modelling-and-validation.md`
@@ -57,3 +60,5 @@ _(nothing yet)_
 - [x] Deep-read the original thesis report and built `wiki/` (original-project knowledge base +
       `gnn-concepts/` placeholder), with an explicit analysis of what needs modernizing (heterogeneous +
       temporal graph learning) rather than reproducing the 2019 methodology as-is.
+- [x] Confirmed real anonymized data is available locally (`data/`, gitignored) across every original
+      pipeline stage; documented in `wiki/this-project/data-availability.md`.
