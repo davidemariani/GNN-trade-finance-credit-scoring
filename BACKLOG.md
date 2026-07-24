@@ -1,79 +1,45 @@
 # Backlog — graph-ml
 
-Live **work-item** tracker (to do / in progress / done). Decisions and their rationale do **not** live
-here — those go in `wiki/` with a one-line pointer in `STUDYBOOK.md`'s decision log (see `CONSTITUTION.md`
-§2.8). This file is just "what's the next thing to build." For the full phased plan, see `specs/roadmap.md`.
+The **currently-active, fine-grained task list** — "what am I building right now and next." The full
+phased plan and its completion status live in `specs/roadmap.md` (the checkboxes there are the status of
+record); this file does **not** duplicate them. Decisions/rationale live in `wiki/` with a one-line
+pointer in `STUDYBOOK.md` (see `CONSTITUTION.md` §2.8).
 
-## To Do
+Keep this short: when a "Next up" item is done, check it off in `specs/roadmap.md` and pull the next one
+here. If this file starts to mirror the roadmap, prune it back.
 
-**Study & foundations** (`notebooks/00_foundations/`)
-- [ ] Graph representation basics (adjacency matrix, edge list, `torch_geometric.data.Data`)
-- [ ] Message-passing framework (aggregate-and-update, permutation invariance)
-- [ ] Spectral vs. spatial convolutions
-- [ ] Over-smoothing and GNN depth limitations
-- [ ] Transductive vs. inductive learning on graphs
-- [ ] Heterogeneous graphs (multiple node/edge types — here: company vs. instrument, role-typed edges)
-- [ ] Temporal / dynamic graph learning (the transaction network is explicitly non-stationary)
+## Now (in progress)
 
-**Baseline & data pipeline** (`src/graph_ml/`, `notebooks/02_project/`)
-_Design is decided (see `wiki/this-project/graph-design.md` + `evaluation.md`); these are the build tasks._
-- [ ] **Convert data to Parquet (zstd)** + back up off-GitHub; keep `data/` gitignored (see
-      `wiki/this-project/data-availability.md` "Storage format & policy").
-- [ ] **Synthetic data generator** (`src/graph_ml/data/synthetic.py`): schema-faithful fake dataset
-      (company + instrument, hybrids, imbalanced labels) so the pipeline runs without the private data and
-      doubles as test fixtures + CI.
-- [ ] Implement graph construction (`src/graph_ml/data/`): `HeteroData` with **company + instrument** node
-      types, role-typed edges, company identity resolved by **name** (unifies the 15 hybrids), company
-      features aggregated from pre-cutoff instruments only. Tests in `tests/`.
-- [ ] Implement inductive temporal split + label-maturity filter + metrics (PR-AUC primary), per
-      `wiki/this-project/evaluation.md`; report seen vs. cold-start breakdown.
-- [ ] **Strong baseline**: LightGBM on instrument features + pre-T company aggregates (plus trivial +
-      logistic-regression reference points) — the real bar the GNN must clear.
-- [ ] `04_network_snapshots.pkl` snapshot semantics — deferred to the temporal phase, not needed for v1.
+_(nothing actively in progress — next action is the top of "Next up")_
 
-**Visualization** (`src/graph_ml/viz/`, cross-cutting — see `wiki/this-project/visualization.md`)
-- [ ] Scaffold `src/graph_ml/viz/` + the seed-aware plotting conventions (`specs/instructions/viz-standards.md`).
-- [ ] EDA visuals: class imbalance, temporal volume, degree distributions, missingness, hybrid footprint.
-- [ ] Interactive company↔instrument topology view (pyvis) + static matplotlib/networkx snapshots.
-- [ ] Results visuals come with the models: PR/ROC curves, calibration, embedding projections, GAT attention.
-- [ ] Architecture visuals: Mermaid message-passing diagrams + torchview computational graphs (per notebook).
-- [ ] Curated static gallery (PNG/SVG) embedded in `README.md`/`wiki/` so the repo is legible on GitHub.
+## Next up — the data pipeline toward the v1 vertical slice (roadmap Phase 3 → 3.5)
 
-**v1 vertical slice** (`specs/roadmap.md` Phase 3.5)
-- [ ] End-to-end thin slice: data → LightGBM baseline → one GNN → honest PR-AUC comparison + written
-      conclusion, all runnable from the synthetic generator. Do this before the full foundations sweep.
+Ordered; each builds on the last. Design is already decided — see `wiki/this-project/graph-design.md`
+and `evaluation.md`; these are just the build steps.
 
-**Architectures** (`notebooks/01_architectures/`, `src/graph_ml/models/`)
-- [ ] GCN, GraphSAGE, GAT, GIN — foundational learning progression (see `specs/roadmap.md` Phase 4).
-      GraphSAGE has a concrete extra motivation here beyond "next in the sequence": its native inductive
-      setting matches the graph-design doc's leakage fix directly (`wiki/this-project/graph-design.md`).
-- [ ] Explicit design decision (with rationale recorded in `wiki/gnn-concepts/`) on what architecture
-      family actually gets applied to the project task, given the graph's heterogeneous + temporal nature
-      — not just whichever foundational architecture was learned last. See
-      `wiki/original-project/limitations-and-motivation-for-gnn.md`.
-- [ ] Apply the chosen candidate(s) to the project task; report honest comparison vs. baseline.
+1. [ ] **Convert `data/` to Parquet (zstd)** and back it up off-GitHub (the data is currently laptop-only).
+       → `wiki/this-project/data-availability.md` "Storage format & policy".
+2. [ ] **Synthetic data generator** (`src/graph_ml/data/synthetic.py`) — schema-faithful fake dataset
+       (company + instrument, 15-ish hybrids, imbalanced labels) so the pipeline runs without the private
+       data and doubles as `tests/` fixtures + CI.
+3. [ ] **Graph construction** (`src/graph_ml/data/`) — `HeteroData` with company + instrument node types,
+       role-typed edges, company identity by **name**, company features aggregated from pre-cutoff
+       instruments only. Tests against the synthetic generator.
+4. [ ] **Split + metrics** — inductive temporal split, label-maturity filter, PR-AUC (+ ROC for
+       comparability); report seen vs. cold-start breakdown. → `evaluation.md`.
+5. [ ] **Strong baseline** — LightGBM on instrument features + pre-T company aggregates (plus trivial and
+       logistic-regression reference points).
+6. [ ] **EDA + topology viz** (`src/graph_ml/viz/`) — imbalance, temporal volume, degree distributions,
+       hybrid footprint, interactive company↔instrument network. → `wiki/this-project/visualization.md`.
+7. [ ] **Vertical slice** — add one GNN (GCN or GraphSAGE), compare honestly to LightGBM on PR-AUC, write
+       the short conclusion + results visuals. This closes roadmap Phase 3.5.
 
-**Engineering scaffolding**
-- [ ] `specs/instructions/` workflows in place — first real use will validate whether they need revising.
+## Parked (revisit when the relevant phase starts)
 
-## In Progress
+- `04_network_snapshots.pkl` snapshot semantics — for the temporal phase, not v1.
+- Foundations notebooks (Phase 2) — backfilled around the slice, written when each concept first bites.
+- Architecture progression GCN→GraphSAGE→GAT→GIN + applied-model choice (Phase 4).
+- Interactive Hugo showcase / D3 hero pieces (Phase 6).
 
-_(nothing yet)_
-
-## Done
-
-- [x] Isolated project scaffold set up (git identity, uv environment, governing docs).
-- [x] Reframed project as a dual-purpose GNN learning + engineering-portfolio showcase; `specs/` folder
-      added (`mission.md`, `tech-stack.md`, `roadmap.md`, `instructions/`).
-- [x] Public GitHub repo created and pushed (`davidemariani/GNN-trade-finance-credit-scoring`).
-- [x] Deep-read the original thesis report and built `wiki/` (original-project knowledge base +
-      `gnn-concepts/` placeholder), with an explicit analysis of what needs modernizing (heterogeneous +
-      temporal graph learning) rather than reproducing the 2019 methodology as-is.
-- [x] Confirmed real anonymized data is available locally (`data/`, gitignored) across every original
-      pipeline stage; documented in `wiki/this-project/data-availability.md`.
-- [x] Decided v1 graph design, task framing (node classification, impairment-only first), and evaluation
-      methodology — `wiki/this-project/graph-design.md` + `evaluation.md`.
-- [x] Plan review (2026-07-24): corrected hybrid finding (15 hybrids by name; contagion is real); revised
-      schema to company + instrument; replaced learned embeddings with time-windowed aggregated company
-      features (resolves the embedding/inductive contradiction); adopted PR-AUC + label-maturity rule +
-      LightGBM strong baseline; added synthetic generator + vertical-slice milestones.
+> Completed work is recorded as checked-off items in `specs/roadmap.md` and as dated entries in
+> `STUDYBOOK.md`'s decision log — not duplicated here.

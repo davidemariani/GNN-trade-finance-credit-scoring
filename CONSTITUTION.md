@@ -109,11 +109,11 @@ This folder must stay fully isolated from the rest of the machine, the same way
      the source of truth for that fact, and everything else *links* to it rather than restating it.
    - `STUDYBOOK.md`'s decision log gets a **one-line pointer** to it — this is the index, deliberately the
      one place a cross-cutting summary is allowed, precisely because its job is fast orientation.
-   - `BACKLOG.md` tracks **work items** (to do / in progress / done), not decisions — don't re-narrate a
-     decision there.
+   - `BACKLOG.md` holds only the **active/next few work items**; `specs/roadmap.md` holds the full plan and
+     its checkbox **status of record**. Neither re-narrates a decision — they link to its `wiki/` home.
 
-   If a fact would need editing in more than these two places to stay correct, that's a smell: collapse it
-   to one home and link. See `specs/instructions/wiki-standards.md` and
+   If a fact would need editing in more than one of these to stay correct, that's a smell: collapse it to
+   one home and link. See `specs/instructions/wiki-standards.md` and
    `specs/instructions/studybook-standards.md`.
 
 ---
@@ -125,7 +125,7 @@ graph_ml/
 ├── STUDYBOOK.md              ← fast orientation + decision log — read this first
 ├── CONSTITUTION.md          ← this file — read second, in full
 ├── CLAUDE.md                ← pointer file for Claude Code
-├── BACKLOG.md                ← current work items (To Do / In Progress / Done)
+├── BACKLOG.md                ← the ordered next few tasks (roadmap holds the full plan + status)
 ├── USAGE.md                  ← environment setup and common commands
 ├── README.md                 ← public-facing, portfolio-facing project description
 ├── specs/                    ← specs-driven development: the "why" behind the work

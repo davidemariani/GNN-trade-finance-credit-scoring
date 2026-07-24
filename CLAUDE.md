@@ -24,13 +24,11 @@ Also check, if relevant to the task at hand:
   original 2019 thesis (terminology, data, methodology, results), `wiki/this-project/` for decisions
   already made about this rework, and `wiki/gnn-concepts/` for GNN concepts already covered. Don't
   re-derive or guess something that's already written down here.
-- `BACKLOG.md` — current work items (To Do / In Progress / Done). Update it as work starts/finishes.
+- `specs/roadmap.md` — the full phased plan and status of record (start with its "plan at a glance" table).
+- `BACKLOG.md` — the ordered next few concrete tasks. Update it and the roadmap checkboxes as work moves.
 - `USAGE.md` — how to set up the environment and run things in this repo.
 
-## One-line summary of what this repo is
+## What this repo is
 
-A from-scratch graph neural network (PyTorch + PyTorch Geometric) rework of the original
-`networkAnalysisForML` trade-finance transaction-network project — built as both a deep, demonstrable
-GNN learning exercise and a software-engineering portfolio piece. Full detail is in `CONSTITUTION.md`
-and `specs/mission.md` — treat those files, not this one, as the source of truth. This file exists only
-to make sure they get read first.
+See `STUDYBOOK.md` (one-paragraph summary + decision log) and `specs/mission.md` (canonical mission).
+This file only exists to make sure those get read first — it is not itself a source of truth.

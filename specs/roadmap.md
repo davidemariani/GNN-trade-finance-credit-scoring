@@ -1,9 +1,31 @@
 # Roadmap
 
-Phases are broadly sequential, but Phase 2 (foundations notebooks) and Phase 3 (baseline + data) can
-overlap — there's no need to finish every foundational notebook before touching data. Check items off as
-they're completed; this file (along with `BACKLOG.md`) is the source of truth for current status, not
-chat history.
+This file is the **plan and the status of record** — phases, goals, and checkboxes. `BACKLOG.md` holds
+only the currently-active, finer-grained tasks and points here for the full picture.
+
+## Plan at a glance
+
+| Phase | What | Status |
+|---|---|---|
+| 0 | Environment & isolation setup (repo, uv env, docs, wiki) | ✅ done |
+| 1 | Study the original 2019 project (deep-read → `wiki/original-project/`) | ✅ done |
+| — | Design & methodology decisions (graph, evaluation, visualization, data storage) | ✅ done |
+| 3 | Data pipeline + **strong (LightGBM) baseline** | ⬜ **next** |
+| 3.5 | **v1 vertical slice** — data → baseline → one GNN → honest comparison (the priority) | ⬜ |
+| 2 | GNN foundations notebooks (backfilled *around* the slice) | ⬜ ongoing |
+| 4 | GNN architectures (GCN→GraphSAGE→GAT→GIN) + applied model choice | ⬜ |
+| 5 | Portfolio quality gate | ⬜ |
+| 6 | Interactive Hugo showcase dashboard (D3 for hero pieces) | ⬜ deferred |
+
+**Execution order (not strictly by phase number).** Phases 0-1 and all the design decisions are done. The
+next concrete work is Phase 3 (data pipeline + baseline) leading straight into the **Phase 3.5 vertical
+slice**, which is the priority: one complete, honest, end-to-end story is worth more — for both learning
+and showcase — than many half-finished notebooks. Phase 2 (foundations) and Phase 4 (architectures) are
+then **backfilled around** that slice, not completed before it; a foundations notebook can be written when
+its concept first becomes relevant to the applied work. Visualization is cross-cutting (see the note in
+Phase 3). Phase 6 is explicitly deferred and blocks nothing.
+
+Check items off as they're completed — the checkboxes below are the current status, not chat history.
 
 ---
 
@@ -39,7 +61,9 @@ chat history.
 
 ## Phase 2 — GNN Foundations (`notebooks/00_foundations/`)
 
-**Goal:** Build and demonstrate first-principles understanding before reaching for architectures.
+**Goal:** Build and demonstrate first-principles understanding. **Backfilled around the vertical slice**
+(see Execution order above) — write each notebook when its concept first becomes relevant, not as a
+gating sweep before any applied work.
 
 - [ ] Graph representation basics: adjacency matrix vs. edge list vs. `torch_geometric.data.Data`;
       directed vs. undirected; node/edge/graph-level features.
@@ -88,10 +112,11 @@ chat history.
 
 ---
 
-## Phase 3.5 — v1 vertical slice (the minimum lovable version)
+## Phase 3.5 — v1 vertical slice (the minimum lovable version) — **PRIORITY**
 
-**Goal:** One *complete, honest, end-to-end* story before breadth. A reviewer values this far more than
-many half-finished notebooks. Do this as a thin slice, then backfill foundations/architectures around it.
+**Goal:** One *complete, honest, end-to-end* story before breadth — the single most important near-term
+milestone. A reviewer values this far more than many half-finished notebooks. Do this as a thin slice,
+then backfill foundations (Phase 2) and architectures (Phase 4) around it.
 
 - [ ] data → strong baseline → one GNN (GCN or GraphSAGE on the company+instrument graph) → honest
       comparison on PR-AUC with the maturity rule and cold-start breakdown → short written conclusion

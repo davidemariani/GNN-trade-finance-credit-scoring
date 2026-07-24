@@ -95,9 +95,11 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 
 ## Where things stand right now
 
-Roadmap phase: **Phase 3 (Baseline & Data)** in progress — graph design and task framing are decided
-(above); implementing `src/graph_ml/data/` graph construction and the inductive train/test split is next.
-See `specs/roadmap.md` for the full phased plan and `BACKLOG.md` for the live task list.
+All planning/design is done (Phases 0-1 + the design decisions). **Nothing is built yet** — `src/graph_ml/`
+is still a skeleton. The immediate next action is the start of the data pipeline: **convert `data/` to
+Parquet + back it up**, then the **synthetic data generator**, then graph construction → split/metrics →
+LightGBM baseline → the **Phase 3.5 vertical slice** (the priority milestone). See `specs/roadmap.md` for
+the full phased plan (and the "plan at a glance" table) and `BACKLOG.md` for the ordered next tasks.
 
 ## Map of the docs (what to read for what)
 
@@ -107,5 +109,5 @@ See `specs/roadmap.md` for the full phased plan and `BACKLOG.md` for the live ta
 - `specs/` — the plan (`mission.md`, `tech-stack.md`, `roadmap.md`) and recurring workflows (`instructions/`).
 - `wiki/` — the knowledge base: `original-project/` (the 2019 thesis, in depth), `this-project/`
   (`data-availability`, `graph-design`, `evaluation`, `visualization`), `gnn-concepts/` (growing GNN reference).
-- `BACKLOG.md` — live task tracker.
+- `BACKLOG.md` — the ordered next few tasks (Now / Next up / Parked); roadmap holds the full plan.
 - `USAGE.md` — how to actually run things.

@@ -28,8 +28,13 @@ This repo has two goals, deliberately pursued together:
   toy example before it's used anywhere else.
 - **`notebooks/02_project/`** — applying the above to the real problem: predicting trade-finance/credit
   outcomes from a buyer/seller transaction graph, with an honest comparison against a classical baseline.
-- **`src/graph_ml/`** — the production-shaped package (typed, tested) that the notebooks import from.
+- **`src/graph_ml/`** — the production-shaped package (typed, tested) that the notebooks import from,
+  including a `viz/` module for reusable data/graph/results visualization.
 - **`tests/`** — `pytest` coverage for everything in `src/graph_ml/`.
+
+Visualization is a first-class part of the project (topology, architecture, and results visuals — see
+`wiki/this-project/visualization.md`), with an interactive Hugo showcase dashboard planned as a later
+milestone.
 
 See [`STUDYBOOK.md`](STUDYBOOK.md) for a fast-orientation summary and decision log,
 [`CONSTITUTION.md`](CONSTITUTION.md) for the full governing rationale and working principles,
@@ -46,4 +51,6 @@ jupyter lab notebooks/
 
 ## Status
 
-Early scaffolding stage — see `specs/roadmap.md` for the phased plan and current progress.
+Planning/design complete; implementation starting with the data pipeline. See `specs/roadmap.md` (its
+"plan at a glance" table) for the phased plan and current progress, and `STUDYBOOK.md` for a fast
+orientation + decision log.
