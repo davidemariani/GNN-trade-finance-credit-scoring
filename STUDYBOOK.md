@@ -43,15 +43,22 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 
 ## Decision log (most recent first — one line + why, link for detail)
 
-- **Synthetic data generator built (2026-07-24)**: `src/graph_ml/data/synthetic.py`
-  (`generate_instruments()`) produces a fake instruments table matching the real `02_instrumentsdf_2`
-  schema, with the two properties that actually matter guaranteed rather than left to chance: exactly
-  `n_hybrids` company names appear in **both** roles (a naive weighted-sampling first attempt failed a test
-  because a low-weight hybrid could go undrawn in one role — fixed by forcing one guaranteed row per
-  hybrid per role), and `customer_id`/`debtor_id` stay disjoint ID spaces per role, mirroring the real data.
-  Currency/factoring-type/invoice-amount distributions calibrated to the real data's observed proportions.
-  8 tests. *Why*: gives graph construction (next) something to build/test against without the private data.
-  → `src/graph_ml/data/synthetic.py`
+- **Synthetic data generator removed (2026-07-24), reversing the entry directly below.** Built, then
+  deleted the same day: it drew labels independently of features by construction, so a model trained on it
+  has nothing real to learn. Fine for "does the code run," but that's not this project's purpose — the
+  point is testing whether real transaction-network structure predicts real credit outcomes, which requires
+  real linkage between features and labels. **Decision: no synthetic substitute.** The pipeline now runs
+  only against the real local data; it is not runnable end-to-end from a bare public clone. Reviewers see
+  the work through committed code, small hand-built test fixtures, notebook outputs, and results
+  artifacts — not by re-running the pipeline themselves. *Why*: a fake dataset with real learnable
+  structure isn't a small addition (it's close to re-deriving the real one), so the honest trade was to
+  drop runnability rather than ship a generator that quietly misrepresents what the project tests.
+  → `wiki/this-project/data-availability.md` "Runnability trade-off"
+- **Synthetic data generator built (2026-07-24, superseded by the entry above the same day)**:
+  `src/graph_ml/data/synthetic.py` (`generate_instruments()`) produced a fake instruments table matching
+  the real `02_instrumentsdf_2` schema, with hybrid coverage and disjoint ID spaces guaranteed rather than
+  left to chance, and calibrated currency/factoring/amount distributions. 8 tests. Kept here only as a
+  record of the reasoning trail — the code itself is deleted.
 - **Data converted to Parquet + a `.gitignore` bug fixed (2026-07-24)**: ran the conversion
   (`src/graph_ml/data/convert.py`, tested), verified **exact** cell-by-cell value equality against the
   originals (not just shape) — only cosmetic, expected representation changes (list→array, object→
@@ -71,8 +78,8 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
   → `wiki/this-project/visualization.md`
 - **Data storage → Parquet, out of repo (2026-07-24)**: convert working data from 2019 `.pkl` to Parquet
   (zstd) — measured 7-14% of pickle size, safe, fast; keep `data/` gitignored (not committed even though it
-  would fit), back up off-GitHub, revisit further anonymization later. Reviewers get a synthetic generator
-  for runnability. *Why*: efficient + safe + confidential, without repo bloat. → `wiki/this-project/data-availability.md`
+  would fit), back up off-GitHub, revisit further anonymization later. *Why*: efficient + safe + confidential,
+  without repo bloat. → `wiki/this-project/data-availability.md`
 - **Plan review + corrections (2026-07-24)**: adversarial review of the whole plan against the data.
   Corrected the hybrid finding (15 hybrids exist, by *name* not ID — earlier "zero overlap" was wrong);
   revised the graph schema to **company + instrument** (two node types) so hybrids/contagion work;
@@ -114,9 +121,9 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 
 ## Where things stand right now
 
-All planning/design is done (Phases 0-1 + the design decisions). **Nothing is built yet** — `src/graph_ml/`
-is still a skeleton. The immediate next action is the start of the data pipeline: **convert `data/` to
-Parquet + back it up**, then the **synthetic data generator**, then graph construction → split/metrics →
+Planning/design is done (Phases 0-1 + the design decisions), and the data is converted to Parquet
+(`src/graph_ml/data/convert.py`, backup still open). The immediate next action is **graph construction**
+against the real data directly (no synthetic substitute — see the decision log), then split/metrics →
 LightGBM baseline → the **Phase 3.5 vertical slice** (the priority milestone). See `specs/roadmap.md` for
 the full phased plan (and the "plan at a glance" table) and `BACKLOG.md` for the ordered next tasks.
 

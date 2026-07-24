@@ -38,6 +38,7 @@ does not contain the raw 163k-row file; only smaller derived dashboard artifacts
 5. **Non-stationarity handling**: node/edge statistics computed per rolling ~20-day window (95 windows
    total across the date range), including only companies actively trading within that window.
 
-This is the closest analogue to what `src/graph_ml/data/` needs to reproduce (or approximate, if using a
-different/synthetic dataset) for the GNN rework: buyer/seller/hybrid node typing, buyer-seller trade
-relationships as edges, and a time-aware (not static) view of the graph.
+This is the closest analogue to what `src/graph_ml/data/` needs to build (from the real anonymized data,
+per `wiki/this-project/data-availability.md` — no synthetic substitute) for the GNN rework: company node
+typing that naturally captures hybrids, buyer-seller trade relationships as edges, and a time-aware
+(not static) view of the graph.

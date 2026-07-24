@@ -88,14 +88,15 @@ gating sweep before any applied work.
       `wiki/this-project/data-availability.md`) — no public/synthetic substitute needed. ✓
 - [x] Graph design, task framing, node-feature policy, and evaluation methodology decided (see the two
       `wiki/this-project/` docs above). ✓
-- [ ] **Convert working data to Parquet (zstd)** and back it up off-GitHub; keep `data/` gitignored. See
+- [x] **Convert working data to Parquet (zstd)** — done via `src/graph_ml/data/convert.py`, verified with
+      an exact value-level round-trip check. Off-GitHub backup still open. See
       `wiki/this-project/data-availability.md` "Storage format & policy".
-- [ ] **Synthetic data generator** (`src/graph_ml/data/synthetic.py`): produce a small schema-faithful
-      fake dataset (company + instrument, hybrids, imbalanced labels) so notebooks/pipeline are runnable
-      by a reviewer who doesn't have the real (gitignored) data, and so it doubles as test fixtures + CI.
 - [ ] Implement graph construction (`src/graph_ml/data/`): build `HeteroData` with **company + instrument**
       node types and role-typed edges, resolving company identity by **name** (unifies the 15 hybrids),
-      per `graph-design.md`. Company features aggregated from pre-cutoff instruments only. Tests in `tests/`.
+      per `graph-design.md`. Company features aggregated from pre-cutoff instruments only, built directly
+      from the real data. Tests use small, hand-built in-memory fixtures per `testing-standards.md` — a
+      full synthetic dataset was tried and dropped (see `wiki/this-project/data-availability.md`: labels
+      independent of features defeat the point of testing whether real structure predicts real outcomes).
 - [ ] Implement the inductive temporal split + label-maturity filter + metrics (PR-AUC primary) exactly as
       `evaluation.md` specifies; report seen vs. cold-start breakdown.
 - [ ] **Strong baseline**: LightGBM on instrument raw features + pre-T company aggregates (plus trivial +
@@ -120,9 +121,10 @@ then backfill foundations (Phase 2) and architectures (Phase 4) around it.
 
 - [ ] data → strong baseline → one GNN (GCN or GraphSAGE on the company+instrument graph) → honest
       comparison on PR-AUC with the maturity rule and cold-start breakdown → short written conclusion
-      (including "the GNN did/didn't beat LightGBM, and here's the likely why"). All reproducible from the
-      synthetic generator so it runs without the private data. Include the topology + results visuals so
-      the slice is legible as a showcase, not just a metrics table.
+      (including "the GNN did/didn't beat LightGBM, and here's the likely why"). Run against the real data
+      locally (not reproducible from a bare public clone — see `wiki/this-project/data-availability.md`
+      "Runnability trade-off"). Include the topology + results visuals so the slice is legible as a
+      showcase — via committed notebook outputs, not by re-running — not just a metrics table.
 
 ---
 

@@ -82,8 +82,10 @@ This folder must stay fully isolated from the rest of the machine, the same way
 2. **No data or secrets in git.** Raw transaction data (incl. Parquet), trained model weights, and any
    credentials never get committed — `.gitignore` excludes `data/`, `*.pt`/`*.pth`/`*.ckpt`, `*.parquet`,
    `mlruns/`, `wandb/`, `.env*`. The real (simulated-name but real-shaped) financial data stays local-only
-   and should be backed up off-GitHub (see `wiki/this-project/data-availability.md`); reviewers run the
-   pipeline via the synthetic generator instead.
+   and should be backed up off-GitHub (see `wiki/this-project/data-availability.md`). There is no synthetic
+   substitute (tried and dropped — see that doc's "Runnability trade-off"): the modelling pipeline requires
+   the real local data and isn't runnable end-to-end from a bare clone; reviewers see the work through
+   committed code, tests, notebook outputs, and results artifacts instead.
 3. **Reproducibility.** New experiments should be runnable end-to-end from a fresh `uv sync` plus a
    documented command (see `USAGE.md`). Record what was run and with what config well enough that it
    can be repeated.

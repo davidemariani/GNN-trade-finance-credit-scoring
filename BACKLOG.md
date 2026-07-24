@@ -20,20 +20,18 @@ and `evaluation.md`; these are just the build steps.
 1. [x] **Convert `data/` to Parquet (zstd)** — done via `src/graph_ml/data/convert.py`, verified with an
        exact value-level round-trip check. [ ] **Still open: back it up off-GitHub** (the data is currently
        laptop-only; originals kept until this happens). → `wiki/this-project/data-availability.md`.
-2. [x] **Synthetic data generator** (`src/graph_ml/data/synthetic.py`, `generate_instruments()`) —
-       schema-faithful fake instruments table (matches `02_instrumentsdf_2`'s column names/dtypes),
-       guaranteed hybrid coverage (not left to chance under sampling), realistic currency/factoring/amount
-       distributions, and label-maturity censoring. 8 tests in `tests/data/test_synthetic.py`.
-3. [ ] **Graph construction** (`src/graph_ml/data/`) — `HeteroData` with company + instrument node types,
+2. [ ] **Graph construction** (`src/graph_ml/data/`) — `HeteroData` with company + instrument node types,
        role-typed edges, company identity by **name**, company features aggregated from pre-cutoff
-       instruments only. Tests against the synthetic generator.
-4. [ ] **Split + metrics** — inductive temporal split, label-maturity filter, PR-AUC (+ ROC for
+       instruments only, built directly from the real Parquet data. Tests use small, hand-built in-memory
+       fixtures (a handful of rows with known expected output — see `testing-standards.md`), not a
+       full synthetic dataset (see `wiki/this-project/data-availability.md` for why that was dropped).
+3. [ ] **Split + metrics** — inductive temporal split, label-maturity filter, PR-AUC (+ ROC for
        comparability); report seen vs. cold-start breakdown. → `evaluation.md`.
-5. [ ] **Strong baseline** — LightGBM on instrument features + pre-T company aggregates (plus trivial and
+4. [ ] **Strong baseline** — LightGBM on instrument features + pre-T company aggregates (plus trivial and
        logistic-regression reference points).
-6. [ ] **EDA + topology viz** (`src/graph_ml/viz/`) — imbalance, temporal volume, degree distributions,
+5. [ ] **EDA + topology viz** (`src/graph_ml/viz/`) — imbalance, temporal volume, degree distributions,
        hybrid footprint, interactive company↔instrument network. → `wiki/this-project/visualization.md`.
-7. [ ] **Vertical slice** — add one GNN (GCN or GraphSAGE), compare honestly to LightGBM on PR-AUC, write
+6. [ ] **Vertical slice** — add one GNN (GCN or GraphSAGE), compare honestly to LightGBM on PR-AUC, write
        the short conclusion + results visuals. This closes roadmap Phase 3.5.
 
 ## Parked (revisit when the relevant phase starts)

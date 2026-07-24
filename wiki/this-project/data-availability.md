@@ -3,9 +3,8 @@
 Unlike the default assumption in `specs/roadmap.md` Phase 1 (that the original dataset was likely
 inaccessible), the owner has the **actual pipeline artifacts from the 2019 thesis** in `data/`
 (gitignored — local-only, never committed; see `CONSTITUTION.md` §2). This resolves the open dataset
-question: **modelling uses the real anonymized data**. (A synthetic generator is still built — but for
-*repo runnability/tests/CI* without the private data, not as the modelling dataset; see "Storage format &
-policy" below and `specs/roadmap.md` Phase 3.)
+question: **all modelling and pipeline development uses the real anonymized data directly** (no synthetic
+substitute — see "Storage format & policy" below for why that was tried and dropped).
 
 ## Files present, in pipeline order
 
@@ -35,8 +34,19 @@ no compatibility shim needed.
 - **Repo → data stays out.** `data/` remains gitignored; the real anonymized data is **not committed**,
   even though compressed it would technically fit under GitHub's limits. Rationale: it's real (if
   simulated-name) financial data, git history is permanent, and a public portfolio repo shouldn't carry
-  it. Reviewers get a **synthetic generator** instead (see `specs/roadmap.md` Phase 3) so the pipeline is
-  runnable without it.
+  it.
+- **Runnability trade-off (accepted 2026-07-24, revising the original plan).** The original plan here was
+  a synthetic-data generator so the modelling pipeline could run end-to-end from a bare public clone. That
+  was built (`src/graph_ml/data/synthetic.py`) and then **removed**: a generator draws labels and features
+  independently by construction, so a model trained on it has nothing real to learn — which is fine for
+  "does the code run" but directly undermines the actual point of this project, testing whether real
+  transaction-network structure predicts real credit outcomes. Since injecting a genuine, non-trivial
+  feature→label relationship into a fake dataset without just re-deriving the real one isn't a small
+  addition, the honest choice is: **no synthetic substitute; the pipeline requires the real local data and
+  is not runnable end-to-end from a fresh clone alone.** Reviewers see the work through committed code,
+  small hand-built test fixtures (`testing-standards.md`), notebook outputs, and results logs/visuals
+  committed as artifacts — not by re-running the modelling pipeline themselves. Revisit only if a
+  lower-effort way to give fake data real learnable structure turns up later.
 - **Backup → off-GitHub.** The data currently exists only on this laptop and is explicitly unsynced (the
   "GitHub is the single source of truth" claim in `tech-stack.md` is true for code, **not** for data). It
   should be backed up once to a private location (private Release asset / cloud storage) so a laptop

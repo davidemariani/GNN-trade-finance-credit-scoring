@@ -23,6 +23,9 @@ a real testing bar — not just "does it run."
 
 - Tests live in `tests/`, mirroring the `src/graph_ml/` package structure (e.g.
   `src/graph_ml/models/gcn.py` → `tests/models/test_gcn.py`).
-- Use small, synthetic, in-memory graphs for unit tests — never depend on `data/` (gitignored, not
-  guaranteed to exist) for tests to pass.
+- Use small, hand-built, in-memory graphs/tables for unit tests (a handful of rows with a known expected
+  result) — never depend on `data/` (gitignored, not guaranteed to exist) for tests to pass. This means a
+  literal few-row fixture written in the test, **not** a general-purpose statistical dataset generator: one
+  was tried for the whole pipeline and dropped because independent-by-construction labels defeat the
+  project's actual purpose — see `wiki/this-project/data-availability.md` "Runnability trade-off."
 - Run `pytest` before considering any change to `src/graph_ml/` complete.
