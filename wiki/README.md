@@ -21,8 +21,11 @@ See `specs/instructions/wiki-standards.md` for how and when to add to it.
   the deeper, code-driven treatment in `notebooks/00_foundations/` and `notebooks/01_architectures/`.
   Starts empty/stubbed and fills in alongside the roadmap's Phase 2/4 work.
 - **`this-project/`** — decisions and facts specific to *this rework* (not the original thesis) that
-  don't belong in `specs/` (which is the plan) or a notebook (which is the how) — e.g. confirmed data
-  availability, dataset-specific quirks discovered while building.
+  don't belong in `specs/` (which is the plan) or a notebook (which is the how). Current pages:
+  - `data-availability.md` — what data exists, confirmed stats, hybrids, and the Parquet/storage policy.
+  - `graph-design.md` — the company+instrument graph schema, node features, leakage handling.
+  - `evaluation.md` — metrics (PR-AUC primary), split, label maturity, cold-start, baselines, logging.
+  - `visualization.md` — the visualization approach, tooling, and the deferred D3/Hugo showcase.
 
 ## How agents should use this
 

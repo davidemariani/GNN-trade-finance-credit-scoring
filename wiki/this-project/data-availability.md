@@ -3,8 +3,9 @@
 Unlike the default assumption in `specs/roadmap.md` Phase 1 (that the original dataset was likely
 inaccessible), the owner has the **actual pipeline artifacts from the 2019 thesis** in `data/`
 (gitignored — local-only, never committed; see `CONSTITUTION.md` §2). This resolves the open dataset
-question: **this rework can use the real anonymized data**, not a public substitute or synthetic
-generator.
+question: **modelling uses the real anonymized data**. (A synthetic generator is still built — but for
+*repo runnability/tests/CI* without the private data, not as the modelling dataset; see "Storage format &
+policy" below and `specs/roadmap.md` Phase 3.)
 
 ## Files present, in pipeline order
 
@@ -22,6 +23,31 @@ generator.
 
 All files load cleanly with the current environment's pandas (3.0) despite being pickled in 2019 —
 no compatibility shim needed.
+
+## Storage format & policy (decided 2026-07-24)
+
+**Decision: convert to Parquet, keep data out of the repo, back up off-GitHub.**
+
+- **Format → Parquet (zstd).** The 2019 `.pkl` files are bulky and unsafe (pickle executes arbitrary code
+  on load, and is brittle across library versions). Parquet is columnar, compressed, safe, and faster to
+  load. Measured on the real files: `00_transactions` 43.8→3.1 MB (7%), `01_instruments` 27.3→3.5 MB (13%),
+  `04_..._bondgraph2` 65.0→9.0 MB (14%). This is the storage format for all working data.
+- **Repo → data stays out.** `data/` remains gitignored; the real anonymized data is **not committed**,
+  even though compressed it would technically fit under GitHub's limits. Rationale: it's real (if
+  simulated-name) financial data, git history is permanent, and a public portfolio repo shouldn't carry
+  it. Reviewers get a **synthetic generator** instead (see `specs/roadmap.md` Phase 3) so the pipeline is
+  runnable without it.
+- **Backup → off-GitHub.** The data currently exists only on this laptop and is explicitly unsynced (the
+  "GitHub is the single source of truth" claim in `tech-stack.md` is true for code, **not** for data). It
+  should be backed up once to a private location (private Release asset / cloud storage) so a laptop
+  failure doesn't lose the dataset that underpins the whole project.
+- **The 1.5 GB `04_network_snapshots.pkl`** is only needed for the deferred temporal phase — convert/keep
+  it only when that phase starts, and consider storing just the columns/downsample actually needed.
+- **Further anonymization**: revisit later if the data is ever to be shared more widely; not needed while
+  it stays local-only.
+
+> Not using Git LFS: on a *public* repo LFS blobs are publicly downloadable (doesn't help confidentiality),
+> and the free tier (1 GB) is blown by the snapshot file immediately. Wrong tool here.
 
 ## Confirmed stats (re-derived directly — supersedes rounded figures in the report where they differ)
 

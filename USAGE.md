@@ -13,6 +13,9 @@ uv sync              # creates/updates .venv and installs all deps from pyprojec
 source .venv/bin/activate
 ```
 
+Optional system dependency: `brew install graphviz` — only needed to *render* `torchview` architecture
+diagrams to image (the Python packages install fine without it; Mermaid diagrams need nothing).
+
 Adding a new dependency (keeps `pyproject.toml` and `uv.lock` in sync — don't hand-edit or `pip install`
 directly into the venv):
 

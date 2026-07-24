@@ -79,9 +79,11 @@ This folder must stay fully isolated from the rest of the machine, the same way
    models (see `wiki/original-project/results.md` for the numbers to compare against) must be run, not
    assumed or invented. If a fair comparison isn't possible (e.g. the original dataset isn't available),
    say so explicitly rather than fabricating numbers.
-2. **No data or secrets in git.** Raw transaction data, trained model weights, and any credentials never
-   get committed — `.gitignore` already excludes `data/`, `*.pt`/`*.pth`/`*.ckpt`, `mlruns/`, `wandb/`,
-   `.env*`. If real trade-finance data is ever used, treat it as confidential and keep it entirely local.
+2. **No data or secrets in git.** Raw transaction data (incl. Parquet), trained model weights, and any
+   credentials never get committed — `.gitignore` excludes `data/`, `*.pt`/`*.pth`/`*.ckpt`, `*.parquet`,
+   `mlruns/`, `wandb/`, `.env*`. The real (simulated-name but real-shaped) financial data stays local-only
+   and should be backed up off-GitHub (see `wiki/this-project/data-availability.md`); reviewers run the
+   pipeline via the synthetic generator instead.
 3. **Reproducibility.** New experiments should be runnable end-to-end from a fresh `uv sync` plus a
    documented command (see `USAGE.md`). Record what was run and with what config well enough that it
    can be repeated.
@@ -130,15 +132,15 @@ graph_ml/
 │   ├── mission.md               (what this project is for and who it's for)
 │   ├── tech-stack.md             (technology choices and isolation setup)
 │   ├── roadmap.md                 (phased plan, checked off as completed)
-│   └── instructions/               (recurring workflows: new architecture, notebook standards, testing, wiki, studybook)
+│   └── instructions/               (recurring workflows: new architecture, notebook/testing/viz standards, wiki, studybook)
 ├── wiki/                     ← growing knowledge base (agent + human readable), see wiki/README.md
 │   ├── original-project/        (everything about the 2019 thesis this reworks)
 │   ├── gnn-concepts/              (growing GNN reference, fills in alongside the roadmap)
-│   └── this-project/               (decisions/facts specific to this rework, e.g. data availability)
+│   └── this-project/               (decisions/facts specific to this rework: data, graph design, evaluation, visualization)
 ├── pyproject.toml            ← dependencies (managed via uv)
 ├── uv.lock
 ├── .python-version
-├── src/graph_ml/              ← installable package: graph construction, models, training, evaluation code
+├── src/graph_ml/              ← installable package: data, models, training, evaluation, viz code
 ├── notebooks/
 │   ├── 00_foundations/          (GNN fundamentals, dataset-independent)
 │   ├── 01_architectures/         (one notebook per architecture: GCN, GraphSAGE, GAT, GIN, ...)

@@ -64,6 +64,8 @@ chat history.
       `wiki/this-project/data-availability.md`) — no public/synthetic substitute needed. ✓
 - [x] Graph design, task framing, node-feature policy, and evaluation methodology decided (see the two
       `wiki/this-project/` docs above). ✓
+- [ ] **Convert working data to Parquet (zstd)** and back it up off-GitHub; keep `data/` gitignored. See
+      `wiki/this-project/data-availability.md` "Storage format & policy".
 - [ ] **Synthetic data generator** (`src/graph_ml/data/synthetic.py`): produce a small schema-faithful
       fake dataset (company + instrument, hybrids, imbalanced labels) so notebooks/pipeline are runnable
       by a reviewer who doesn't have the real (gitignored) data, and so it doubles as test fixtures + CI.
@@ -75,7 +77,14 @@ chat history.
 - [ ] **Strong baseline**: LightGBM on instrument raw features + pre-T company aggregates (plus trivial +
       logistic-regression reference points) — this is the real bar the GNN must clear
       (`wiki/this-project/evaluation.md`).
+- [ ] **EDA + topology visualization** (`src/graph_ml/viz/`, per `wiki/this-project/visualization.md`):
+      class imbalance, temporal volume, degree distributions, hybrid footprint, and an interactive
+      company↔instrument network view. This is both understanding and showcase material.
 - [ ] `04_network_snapshots.pkl` snapshot semantics — deferred to the temporal phase, not needed for v1.
+
+> **Visualization is cross-cutting, not a phase.** Per `wiki/this-project/visualization.md`, each phase
+> produces its own visuals: EDA/topology here (Phase 3), architecture/message-passing diagrams in Phase 4,
+> results/embedding/attention plots when models are evaluated. The dedicated *showcase* build is Phase 6.
 
 ---
 
@@ -87,7 +96,8 @@ many half-finished notebooks. Do this as a thin slice, then backfill foundations
 - [ ] data → strong baseline → one GNN (GCN or GraphSAGE on the company+instrument graph) → honest
       comparison on PR-AUC with the maturity rule and cold-start breakdown → short written conclusion
       (including "the GNN did/didn't beat LightGBM, and here's the likely why"). All reproducible from the
-      synthetic generator so it runs without the private data.
+      synthetic generator so it runs without the private data. Include the topology + results visuals so
+      the slice is legible as a showcase, not just a metrics table.
 
 ---
 
@@ -105,6 +115,9 @@ doesn't capture).
 - [ ] GraphSAGE — inductive setting, neighbor sampling.
 - [ ] GAT — attention-based neighbor weighting.
 - [ ] GIN — expressiveness ceiling (Weisfeiler-Lehman test), why it matters.
+- [ ] Each architecture notebook includes its **message-passing diagram (Mermaid)** and the **actual model
+      computational graph (torchview)** — the visual half of the "explain before implement" rule
+      (`wiki/this-project/visualization.md`).
 - [ ] Explicit design decision: choose the architecture family for the applied model, informed by the
       foundational progression above but decided on fit to this graph's heterogeneous + temporal nature
       (e.g. relation-aware/heterogeneous message passing, and/or a temporal graph learning approach) —
@@ -131,3 +144,19 @@ as "done" for portfolio purposes.
 - [ ] No fabricated or unverified results anywhere — all reported numbers trace back to a runnable
       notebook/script.
 - [ ] `ruff` clean; no committed data, weights, or secrets.
+- [ ] Repo is visually legible on GitHub: a small curated gallery of static figures (topology, an
+      architecture diagram, the results comparison) embedded in `README.md`/`wiki/`.
+
+---
+
+## Phase 6 — Showcase: interactive Hugo dashboard (deferred)
+
+**Goal:** Redo the original 2019 dashboard as a modern, interactive showcase on a Hugo static site — the
+public-facing portfolio artifact. Explicitly *later*; nothing here blocks Phases 2-5.
+
+- [ ] Decide scope: which visuals become interactive web pieces (topology is the prime candidate).
+- [ ] For each: use Plotly's HTML export where sufficient; reserve a hand-built **D3.js** component only
+      for a hero piece that warrants it (adapt the working D3 force-graph from the owner's `dave_the_human`
+      `/brain` site). See `wiki/this-project/visualization.md` "Deferred: Hugo dashboard".
+- [ ] Build the Hugo site (mirroring the isolated, personal-GitHub pattern of `dave_the_human`), embedding
+      the exported/handmade visuals + a written narrative of the project and its honest results.

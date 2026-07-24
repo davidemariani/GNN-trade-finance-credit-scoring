@@ -19,8 +19,14 @@ data/
 *.pth
 *.ckpt
 *.pkl
+*.parquet
 mlruns/
 wandb/
+
+# Large interactive viz exports are build artifacts, not committed (see specs/instructions/viz-standards.md)
+# (small static PNG/SVG for the wiki gallery ARE committed — those live under wiki/ and are not ignored)
+viz_exports/
+*.embed.html
 
 # Local-only source reference material (not for public publication)
 wiki/original-project/source/

@@ -13,6 +13,9 @@ dependencies = [
     "scikit-learn>=1.5",
     "matplotlib>=3.9",
     "lightgbm>=4.7.0",
+    "plotly>=6.9.0",
+    "pyvis>=0.3.2",
+    "pyarrow>=25.0.0",
 ]
 
 [dependency-groups]
@@ -20,6 +23,7 @@ dev = [
     "pytest>=8.3",
     "jupyter>=1.1",
     "ruff>=0.6",
+    "torchview>=0.2.7",
 ]
 
 [build-system]

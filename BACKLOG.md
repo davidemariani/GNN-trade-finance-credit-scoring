@@ -17,6 +17,8 @@ here — those go in `wiki/` with a one-line pointer in `STUDYBOOK.md`'s decisio
 
 **Baseline & data pipeline** (`src/graph_ml/`, `notebooks/02_project/`)
 _Design is decided (see `wiki/this-project/graph-design.md` + `evaluation.md`); these are the build tasks._
+- [ ] **Convert data to Parquet (zstd)** + back up off-GitHub; keep `data/` gitignored (see
+      `wiki/this-project/data-availability.md` "Storage format & policy").
 - [ ] **Synthetic data generator** (`src/graph_ml/data/synthetic.py`): schema-faithful fake dataset
       (company + instrument, hybrids, imbalanced labels) so the pipeline runs without the private data and
       doubles as test fixtures + CI.
@@ -28,6 +30,14 @@ _Design is decided (see `wiki/this-project/graph-design.md` + `evaluation.md`); 
 - [ ] **Strong baseline**: LightGBM on instrument features + pre-T company aggregates (plus trivial +
       logistic-regression reference points) — the real bar the GNN must clear.
 - [ ] `04_network_snapshots.pkl` snapshot semantics — deferred to the temporal phase, not needed for v1.
+
+**Visualization** (`src/graph_ml/viz/`, cross-cutting — see `wiki/this-project/visualization.md`)
+- [ ] Scaffold `src/graph_ml/viz/` + the seed-aware plotting conventions (`specs/instructions/viz-standards.md`).
+- [ ] EDA visuals: class imbalance, temporal volume, degree distributions, missingness, hybrid footprint.
+- [ ] Interactive company↔instrument topology view (pyvis) + static matplotlib/networkx snapshots.
+- [ ] Results visuals come with the models: PR/ROC curves, calibration, embedding projections, GAT attention.
+- [ ] Architecture visuals: Mermaid message-passing diagrams + torchview computational graphs (per notebook).
+- [ ] Curated static gallery (PNG/SVG) embedded in `README.md`/`wiki/` so the repo is legible on GitHub.
 
 **v1 vertical slice** (`specs/roadmap.md` Phase 3.5)
 - [ ] End-to-end thin slice: data → LightGBM baseline → one GNN → honest PR-AUC comparison + written

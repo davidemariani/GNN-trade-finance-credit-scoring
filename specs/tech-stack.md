@@ -10,10 +10,16 @@
 | Classical ML (baselines) | `scikit-learn` | Logistic-regression / trivial baselines and metrics (PR-AUC, ROC AUC). |
 | Strong tabular baseline | `lightgbm` | Gradient-boosted trees — the *strong* modern baseline a GNN must actually beat to justify itself (the original used Random Forest; GBTs are the stronger 2020s equivalent). See `wiki/this-project/evaluation.md`. |
 | Graph handling / prototyping | `networkx` | Used for exploratory graph construction and visualization before/alongside `torch_geometric.data.Data` objects. |
+| Data storage | `pyarrow` (Parquet) | Working data stored as Parquet (zstd) — columnar, compressed (~7-14% of pickle size), safe (no arbitrary-code-execution on load), fast. Replaces the 2019 `.pkl` files. See `wiki/this-project/data-availability.md`. |
 | Notebooks | `jupyter` / `jupyterlab` | All educational and experiment notebooks. |
-| Plotting | `matplotlib` | Kept deliberately simple/standard so plots are easy to reproduce. |
+| Static plotting | `matplotlib` | Default for GitHub-rendered, reproducible, publication-quality figures. |
+| Interactive plotting | `plotly` | Interactive EDA/results; exports self-contained HTML that embeds into the future Hugo site. |
+| Interactive network topology | `pyvis` (vis.js) | Force-directed, draggable company↔instrument network views. |
+| Architecture diagrams | Mermaid (markdown) + `torchview` (dev) | Mermaid for conceptual/message-passing diagrams (renders on GitHub); torchview for the actual model computational graph. **torchview needs the system `graphviz` binary** (`brew install graphviz`) to render. |
 | Testing | `pytest` | All non-exploratory code in `src/graph_ml/` gets tests in `tests/`. |
 | Linting | `ruff` | Fast, single-tool lint + format. |
+
+Full visualization approach and the deferred D3.js/Hugo showcase decision: `wiki/this-project/visualization.md`.
 
 ## Local Environment (Isolated)
 
@@ -28,7 +34,7 @@ installed globally, into system Python, or shared with any other project.
 
 **To replicate on any machine:**
 ```bash
-brew install uv
+brew install uv graphviz   # graphviz binary is needed only for torchview architecture diagrams
 git clone https://github.com/davidemariani/GNN-trade-finance-credit-scoring.git ~/graph_ml
 cd ~/graph_ml && uv sync
 source .venv/bin/activate

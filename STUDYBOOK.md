@@ -43,6 +43,17 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 
 ## Decision log (most recent first — one line + why, link for detail)
 
+- **Visualization approach (2026-07-24)**: Python stack — matplotlib (static, GitHub-rendered) + Plotly
+  (interactive, Hugo-ready HTML export) + pyvis (interactive network topology); Mermaid + torchview for
+  architecture/message-passing diagrams. Visualization is cross-cutting (woven into every phase, reusable
+  code in `src/graph_ml/viz/`), not a phase. **D3.js is deferred, showcase-only** — reserved for a few hero
+  pieces on the eventual Hugo static-site dashboard (Phase 6), adapting the D3 force-graph from
+  `dave_the_human`. *Why*: get interactivity from Python for free now; reserve bespoke JS for the showcase.
+  → `wiki/this-project/visualization.md`
+- **Data storage → Parquet, out of repo (2026-07-24)**: convert working data from 2019 `.pkl` to Parquet
+  (zstd) — measured 7-14% of pickle size, safe, fast; keep `data/` gitignored (not committed even though it
+  would fit), back up off-GitHub, revisit further anonymization later. Reviewers get a synthetic generator
+  for runnability. *Why*: efficient + safe + confidential, without repo bloat. → `wiki/this-project/data-availability.md`
 - **Plan review + corrections (2026-07-24)**: adversarial review of the whole plan against the data.
   Corrected the hybrid finding (15 hybrids exist, by *name* not ID — earlier "zero overlap" was wrong);
   revised the graph schema to **company + instrument** (two node types) so hybrids/contagion work;
@@ -94,7 +105,7 @@ See `specs/roadmap.md` for the full phased plan and `BACKLOG.md` for the live ta
 - `CONSTITUTION.md` — the rules (isolation, principles, folder structure). Read first if you're an agent
   picking this up cold.
 - `specs/` — the plan (`mission.md`, `tech-stack.md`, `roadmap.md`) and recurring workflows (`instructions/`).
-- `wiki/` — the knowledge base: `original-project/` (the 2019 thesis, in depth), `this-project/` (decisions
-  and facts about this rework), `gnn-concepts/` (growing GNN reference).
+- `wiki/` — the knowledge base: `original-project/` (the 2019 thesis, in depth), `this-project/`
+  (`data-availability`, `graph-design`, `evaluation`, `visualization`), `gnn-concepts/` (growing GNN reference).
 - `BACKLOG.md` — live task tracker.
 - `USAGE.md` — how to actually run things.
