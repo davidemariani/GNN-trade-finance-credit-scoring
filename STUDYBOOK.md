@@ -43,6 +43,15 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 
 ## Decision log (most recent first — one line + why, link for detail)
 
+- **Synthetic data generator built (2026-07-24)**: `src/graph_ml/data/synthetic.py`
+  (`generate_instruments()`) produces a fake instruments table matching the real `02_instrumentsdf_2`
+  schema, with the two properties that actually matter guaranteed rather than left to chance: exactly
+  `n_hybrids` company names appear in **both** roles (a naive weighted-sampling first attempt failed a test
+  because a low-weight hybrid could go undrawn in one role — fixed by forcing one guaranteed row per
+  hybrid per role), and `customer_id`/`debtor_id` stay disjoint ID spaces per role, mirroring the real data.
+  Currency/factoring-type/invoice-amount distributions calibrated to the real data's observed proportions.
+  8 tests. *Why*: gives graph construction (next) something to build/test against without the private data.
+  → `src/graph_ml/data/synthetic.py`
 - **Data converted to Parquet + a `.gitignore` bug fixed (2026-07-24)**: ran the conversion
   (`src/graph_ml/data/convert.py`, tested), verified **exact** cell-by-cell value equality against the
   originals (not just shape) — only cosmetic, expected representation changes (list→array, object→

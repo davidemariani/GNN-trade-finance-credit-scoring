@@ -20,9 +20,10 @@ and `evaluation.md`; these are just the build steps.
 1. [x] **Convert `data/` to Parquet (zstd)** — done via `src/graph_ml/data/convert.py`, verified with an
        exact value-level round-trip check. [ ] **Still open: back it up off-GitHub** (the data is currently
        laptop-only; originals kept until this happens). → `wiki/this-project/data-availability.md`.
-2. [ ] **Synthetic data generator** (`src/graph_ml/data/synthetic.py`) — schema-faithful fake dataset
-       (company + instrument, 15-ish hybrids, imbalanced labels) so the pipeline runs without the private
-       data and doubles as `tests/` fixtures + CI.
+2. [x] **Synthetic data generator** (`src/graph_ml/data/synthetic.py`, `generate_instruments()`) —
+       schema-faithful fake instruments table (matches `02_instrumentsdf_2`'s column names/dtypes),
+       guaranteed hybrid coverage (not left to chance under sampling), realistic currency/factoring/amount
+       distributions, and label-maturity censoring. 8 tests in `tests/data/test_synthetic.py`.
 3. [ ] **Graph construction** (`src/graph_ml/data/`) — `HeteroData` with company + instrument node types,
        role-typed edges, company identity by **name**, company features aggregated from pre-cutoff
        instruments only. Tests against the synthetic generator.
