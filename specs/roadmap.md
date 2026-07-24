@@ -56,20 +56,38 @@ chat history.
 
 ## Phase 3 — Baseline & Data (`notebooks/02_project/`, `src/graph_ml/`)
 
-**Goal:** A working, honest baseline before any GNN is judged against it.
+**Goal:** A working, honest, *strong* baseline before any GNN is judged against it. Design decided:
+`wiki/this-project/graph-design.md` (company + instrument graph) and `wiki/this-project/evaluation.md`
+(metrics, split, maturity, baselines).
 
 - [x] Dataset decided: the real anonymized pipeline data in `data/` (see
       `wiki/this-project/data-availability.md`) — no public/synthetic substitute needed. ✓
-- [ ] Understand `04_network_snapshots.pkl`'s exact snapshot semantics before relying on it for temporal
-      graph construction.
-- [ ] Implement graph construction (`src/graph_ml/data/`): nodes (buyers/sellers/hybrids), edges (trade
-      relationships), raw attributes → node/edge features, built from `00_transactionsdf_simNames.pkl` /
-      `01_instrumentsdf.pkl`. Tests in `tests/`.
-- [ ] Precisely define the prediction task (node, edge/link, or graph-level) and justify the choice against
-      what the original project did. Account for real, confirmed class imbalance (impairment 2.06%, p90
-      7.01%, p180 6.02% positive).
-- [ ] Reproduce a classical baseline (logistic regression / random forest on simple graph features) —
-      this is the number every GNN result gets compared against (target: `wiki/original-project/results.md`).
+- [x] Graph design, task framing, node-feature policy, and evaluation methodology decided (see the two
+      `wiki/this-project/` docs above). ✓
+- [ ] **Synthetic data generator** (`src/graph_ml/data/synthetic.py`): produce a small schema-faithful
+      fake dataset (company + instrument, hybrids, imbalanced labels) so notebooks/pipeline are runnable
+      by a reviewer who doesn't have the real (gitignored) data, and so it doubles as test fixtures + CI.
+- [ ] Implement graph construction (`src/graph_ml/data/`): build `HeteroData` with **company + instrument**
+      node types and role-typed edges, resolving company identity by **name** (unifies the 15 hybrids),
+      per `graph-design.md`. Company features aggregated from pre-cutoff instruments only. Tests in `tests/`.
+- [ ] Implement the inductive temporal split + label-maturity filter + metrics (PR-AUC primary) exactly as
+      `evaluation.md` specifies; report seen vs. cold-start breakdown.
+- [ ] **Strong baseline**: LightGBM on instrument raw features + pre-T company aggregates (plus trivial +
+      logistic-regression reference points) — this is the real bar the GNN must clear
+      (`wiki/this-project/evaluation.md`).
+- [ ] `04_network_snapshots.pkl` snapshot semantics — deferred to the temporal phase, not needed for v1.
+
+---
+
+## Phase 3.5 — v1 vertical slice (the minimum lovable version)
+
+**Goal:** One *complete, honest, end-to-end* story before breadth. A reviewer values this far more than
+many half-finished notebooks. Do this as a thin slice, then backfill foundations/architectures around it.
+
+- [ ] data → strong baseline → one GNN (GCN or GraphSAGE on the company+instrument graph) → honest
+      comparison on PR-AUC with the maturity rule and cold-start breakdown → short written conclusion
+      (including "the GNN did/didn't beat LightGBM, and here's the likely why"). All reproducible from the
+      synthetic generator so it runs without the private data.
 
 ---
 
@@ -79,8 +97,9 @@ chat history.
 its use in the applied project. The foundational progression below is a *learning path* — the model(s)
 actually applied to the project's task should be chosen deliberately for fit, not just picked because they
 were learned first (see `wiki/original-project/limitations-and-motivation-for-gnn.md`: this graph is
-heterogeneous — buyers/sellers/hybrids are structurally different node types — and temporal/non-stationary,
-which a plain homogeneous, static-graph architecture doesn't capture).
+heterogeneous — company vs. instrument node types with role-typed edges, and hybrid companies bridging
+buyer/seller roles — and temporal/non-stationary, which a plain homogeneous, static-graph architecture
+doesn't capture).
 
 - [ ] GCN (Kipf & Welling) — first spatial convolution, simplest baseline GNN.
 - [ ] GraphSAGE — inductive setting, neighbor sampling.
@@ -91,8 +110,12 @@ which a plain homogeneous, static-graph architecture doesn't capture).
       (e.g. relation-aware/heterogeneous message passing, and/or a temporal graph learning approach) —
       not defaulted to whichever foundational architecture came last. Document the decision and rationale
       in `wiki/gnn-concepts/` before implementing it.
+- [ ] **Test the contagion hypothesis explicitly**: only once past the 2-hop same-company aggregation of
+      v1 (which overlaps the original's hand-features) does the graph genuinely exercise buyer→hybrid→buyer
+      contagion paths. Deeper/temporal models are where the "networked signal" claim actually gets tested —
+      see `wiki/this-project/graph-design.md` "Known simplification".
 - [ ] Apply the chosen candidate(s) to the project's prediction task; compare honestly against the
-      Phase 3 baseline and record what did/didn't help and why.
+      Phase 3 strong (LightGBM) baseline on PR-AUC and record what did/didn't help and why.
 
 ---
 

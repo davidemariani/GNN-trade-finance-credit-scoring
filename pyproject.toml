@@ -12,6 +12,7 @@ dependencies = [
     "numpy>=1.26",
     "scikit-learn>=1.5",
     "matplotlib>=3.9",
+    "lightgbm>=4.7.0",
 ]
 
 [dependency-groups]

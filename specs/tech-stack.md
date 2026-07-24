@@ -7,7 +7,8 @@
 | Language | **Python 3.12** | Pinned via `.python-version`; chosen for broad, stable compatibility with the current PyTorch/PyG release rather than bleeding-edge Python. |
 | ML framework | **PyTorch** (`torch`) | Apple M4 → MPS (Metal) backend for GPU acceleration, no CUDA needed on this machine. |
 | GNN library | **PyTorch Geometric** (`torch_geometric`) | Chosen over DGL for its tighter PyTorch integration and the breadth of example architectures/datasets useful for a learning-focused project. |
-| Classical ML (baselines) | `scikit-learn` | Used to reproduce a fair, honest baseline against the original project's classical models (§0 of `CONSTITUTION.md`). |
+| Classical ML (baselines) | `scikit-learn` | Logistic-regression / trivial baselines and metrics (PR-AUC, ROC AUC). |
+| Strong tabular baseline | `lightgbm` | Gradient-boosted trees — the *strong* modern baseline a GNN must actually beat to justify itself (the original used Random Forest; GBTs are the stronger 2020s equivalent). See `wiki/this-project/evaluation.md`. |
 | Graph handling / prototyping | `networkx` | Used for exploratory graph construction and visualization before/alongside `torch_geometric.data.Data` objects. |
 | Notebooks | `jupyter` / `jupyterlab` | All educational and experiment notebooks. |
 | Plotting | `matplotlib` | Kept deliberately simple/standard so plots are easy to reproduce. |

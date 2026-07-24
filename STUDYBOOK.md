@@ -29,22 +29,31 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 
 ## Key numbers to remember
 
-- Original results to beat (`wiki/original-project/results.md`): **impairment RF 0.954 AUC**, p90 RF
-  0.861, p180 MLP 0.884.
-- Real data (`wiki/this-project/data-availability.md`): 59,820 instruments (final feature set), 132
-  sellers, 3,176 buyers, dates 2013-07-23 to 2018-12-18. Zero ID overlap between sellers and buyers (no
-  hybrid-merging needed for v1).
-- v1 graph (`wiki/this-project/graph-design.md`): ~63k nodes / ~120k edges — small enough for full-batch
-  training, no sampling infra needed yet.
+- Original results as a **reference point** (`wiki/original-project/results.md`): impairment RF 0.954, p90
+  RF 0.861, p180 MLP 0.884 — these are *ROC AUC*, which misleads at 2% positives, so they're for
+  comparability, not a target to chase. This project's headline metric is **PR-AUC** (`evaluation.md`).
+- Real data (`wiki/this-project/data-availability.md`): 59,820 instruments (final feature set), 132 seller
+  IDs, 3,176 buyer IDs, dates 2013-07-23 to 2018-12-18. **15 hybrids** (companies that are both buyer and
+  seller) — resolvable only by company *name*, since buyer/seller IDs are separate spaces; hybrids touch
+  18.7% of instruments (the real network-contagion signal).
+- Split facts at T=2018-04-30 (impairment): ~56% of test companies unseen in training (cold-start),
+  ~32% of test instruments still `is_open` (label maturity) — both drive design choices, see evaluation.md.
+- v1 graph (`wiki/this-project/graph-design.md`): company + instrument node types, ~63k nodes / ~120k
+  edges — small enough for full-batch training, no sampling infra needed yet.
 
 ## Decision log (most recent first — one line + why, link for detail)
 
-- **Graph design v1**: heterogeneous (instrument/buyer/seller node types), static, instrument-centric star
-  schema; instrument nodes get raw features, buyer/seller nodes get pure learned embeddings; task = node
-  classification on impairment only for v1; leakage handled via an **inductive** train/test split (not a
-  transductive one). *Why*: matches label granularity, avoids the clique-blowup of projecting onto a
-  homogeneous instrument graph, and closes the same time-leak failure mode the original thesis fought.
-  → `wiki/this-project/graph-design.md`
+- **Plan review + corrections (2026-07-24)**: adversarial review of the whole plan against the data.
+  Corrected the hybrid finding (15 hybrids exist, by *name* not ID — earlier "zero overlap" was wrong);
+  revised the graph schema to **company + instrument** (two node types) so hybrids/contagion work;
+  replaced "pure learned company embeddings" with **time-windowed aggregated company features** (the
+  embedding+inductive combo was self-contradictory and 25% of test instruments are cold-start); added
+  `evaluation.md` (PR-AUC co-primary since AUC misleads at 2% positives, label-maturity rule, strong
+  gradient-boosting baseline). *Why*: correctness holes + honest-benchmarking. → `wiki/this-project/graph-design.md`, `wiki/this-project/evaluation.md`
+- **Graph design v1** (superseded in part by the review above): heterogeneous, static, instrument-centric;
+  node classification on impairment only for v1; inductive train/test split for leakage control. *Why*:
+  matches label granularity, avoids clique-blowup of a homogeneous instrument graph, closes the time-leak
+  failure mode the original fought. → `wiki/this-project/graph-design.md`
 - **Confirmed real dataset available**: owner has the full original pipeline's pickled artifacts locally
   in `data/` (gitignored), not just raw data — every stage from raw transactions to the final bond-graph
   feature set, plus a temporal snapshot file. *Why it matters*: no public/synthetic dataset substitute

@@ -99,13 +99,20 @@ This folder must stay fully isolated from the rest of the machine, the same way
 7. **Test what you build.** Everything in `src/graph_ml/` gets a test in `tests/` — see
    `specs/instructions/testing-standards.md`. This is a portfolio piece; untested code undercuts the
    engineering-discipline half of the point.
-8. **Record significant developments as they happen, not after the fact.** Any real decision, discovery,
-   or change of direction (a design choice, a data finding, a result, a scope change) gets written into
-   **both** `wiki/` (the full detail, in the appropriate page) **and** `STUDYBOOK.md` (a one-line entry in
-   the decision log with a pointer to the detail) in the same turn it's made — not deferred, not left only
-   in chat history. See `specs/instructions/wiki-standards.md` and `specs/instructions/studybook-standards.md`.
-   This is the mechanism that makes the rest of this file's claims about specs-driven development and
-   documentation actually true over time, rather than aspirational.
+8. **Record significant developments as they happen — once, in the right place.** Any real decision,
+   discovery, or change of direction (a design choice, a data finding, a result, a scope change) gets
+   captured in the same turn it's made, not deferred to chat history. To avoid the duplication that breeds
+   drift, each fact has **one home**:
+   - The **full detail + rationale** lives in the single relevant `wiki/` page (or `specs/`) — that page is
+     the source of truth for that fact, and everything else *links* to it rather than restating it.
+   - `STUDYBOOK.md`'s decision log gets a **one-line pointer** to it — this is the index, deliberately the
+     one place a cross-cutting summary is allowed, precisely because its job is fast orientation.
+   - `BACKLOG.md` tracks **work items** (to do / in progress / done), not decisions — don't re-narrate a
+     decision there.
+
+   If a fact would need editing in more than these two places to stay correct, that's a smell: collapse it
+   to one home and link. See `specs/instructions/wiki-standards.md` and
+   `specs/instructions/studybook-standards.md`.
 
 ---
 
