@@ -17,8 +17,9 @@ _(nothing actively in progress — next action is the top of "Next up")_
 Ordered; each builds on the last. Design is already decided — see `wiki/this-project/graph-design.md`
 and `evaluation.md`; these are just the build steps.
 
-1. [ ] **Convert `data/` to Parquet (zstd)** and back it up off-GitHub (the data is currently laptop-only).
-       → `wiki/this-project/data-availability.md` "Storage format & policy".
+1. [x] **Convert `data/` to Parquet (zstd)** — done via `src/graph_ml/data/convert.py`, verified with an
+       exact value-level round-trip check. [ ] **Still open: back it up off-GitHub** (the data is currently
+       laptop-only; originals kept until this happens). → `wiki/this-project/data-availability.md`.
 2. [ ] **Synthetic data generator** (`src/graph_ml/data/synthetic.py`) — schema-faithful fake dataset
        (company + instrument, 15-ish hybrids, imbalanced labels) so the pipeline runs without the private
        data and doubles as `tests/` fixtures + CI.

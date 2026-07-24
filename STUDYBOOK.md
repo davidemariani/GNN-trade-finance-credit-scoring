@@ -43,6 +43,16 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 
 ## Decision log (most recent first — one line + why, link for detail)
 
+- **Data converted to Parquet + a `.gitignore` bug fixed (2026-07-24)**: ran the conversion
+  (`src/graph_ml/data/convert.py`, tested), verified **exact** cell-by-cell value equality against the
+  originals (not just shape) — only cosmetic, expected representation changes (list→array, object→
+  StringDtype), documented so future code doesn't assume the old shapes. While building this, found
+  `.gitignore`'s unanchored `data/` rule was silently excluding **any** directory named `data` anywhere in
+  the repo, not just the top-level one — it was hiding the brand-new `src/graph_ml/data/` and `tests/data/`
+  source code from git. Fixed to `/data/` (anchored). *Why it matters*: caught before any commit, but would
+  have silently lost source code otherwise — a reminder to `git status`-check after adding any new
+  top-level-named directory. Originals kept until the off-GitHub backup is actually done (not yet — backup
+  location is still an open choice). → `wiki/this-project/data-availability.md`
 - **Visualization approach (2026-07-24)**: Python stack — matplotlib (static, GitHub-rendered) + Plotly
   (interactive, Hugo-ready HTML export) + pyvis (interactive network topology); Mermaid + torchview for
   architecture/message-passing diagrams. Visualization is cross-cutting (woven into every phase, reusable

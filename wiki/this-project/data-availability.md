@@ -49,6 +49,27 @@ no compatibility shim needed.
 > Not using Git LFS: on a *public* repo LFS blobs are publicly downloadable (doesn't help confidentiality),
 > and the free tier (1 GB) is blown by the snapshot file immediately. Wrong tool here.
 
+### Conversion done (2026-07-24); one representation quirk to know about
+
+All 8 non-snapshot files converted via `src/graph_ml/data/convert.py` (`python -m graph_ml.data.convert
+data/`), verified with an exact cell-by-cell round-trip check (not just shape/dtype) — **every value is
+identical**. Sizes matched the earlier estimate: 7-17% of pickle size (e.g. raw transactions 43.8→3.1 MB,
+final feature set 65.0→9.0 MB; total non-snapshot data 1.7 GB pickle → ~230 MB Parquet).
+
+Two **cosmetic, non-lossy** representation changes downstream code must expect, both from pandas
+3.0 + Arrow's normal round-trip behavior, not from anything specific to this conversion:
+- Plain string columns and the index come back as pandas' `StringDtype` instead of plain `object`.
+- Several columns (`posting_date`, `payment_date`, `transaction_type`, `payment_amount`, `ttype`,
+  `ttypeset`) hold a **per-instrument list of values across that instrument's transaction lines** (ragged,
+  ~1-30 items/row) — a raw/pre-aggregation structure that survives all the way to the final
+  `04_instrumentsdf_bondgraph2` modeling table alongside the engineered scalar features. Parquet round-trips
+  these as **numpy arrays of `datetime64`/plain values** instead of Python **lists of `Timestamp`/objects**.
+  Code reading these columns from Parquet should expect arrays, not lists — an `isinstance(x, list)` check
+  written against the old pickles would silently break.
+
+The original `.pkl` files are **kept for now** (not deleted) until the off-GitHub backup above actually
+exists — deleting the only copy of the real data before a backup is confirmed would be needless risk.
+
 ## Confirmed stats (re-derived directly — supersedes rounded figures in the report where they differ)
 
 On `04_instrumentsdf_bondgraph2.pkl` (the final feature set, 59,820 rows):

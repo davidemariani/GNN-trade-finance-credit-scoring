@@ -14,7 +14,8 @@ __pycache__/
 .venv/
 
 # ML artifacts / data (never commit real data or trained weights)
-data/
+# Anchored to repo root (leading /) so this doesn't also match src/graph_ml/data/ or tests/data/.
+/data/
 *.pt
 *.pth
 *.ckpt
