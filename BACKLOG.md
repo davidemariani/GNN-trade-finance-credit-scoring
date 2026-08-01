@@ -33,8 +33,9 @@ and `evaluation.md`; these are just the build steps.
 4. [x] **Strong baseline** — LightGBM on instrument features + pre-T company aggregates (plus trivial and
        logistic-regression reference points). Overall PR-AUC 0.465; results split by seen/cold-start in
        `results/baseline_metrics.csv`; studybook: `notebooks/02_project/02_tabular_baselines.ipynb`.
-5. [ ] **EDA + topology viz** (`src/graph_ml/viz/`) — imbalance, temporal volume, degree distributions,
-       hybrid footprint, interactive company↔instrument network. → `wiki/this-project/visualization.md`.
+5. [x] **EDA + topology viz** (`src/graph_ml/viz/`) — imbalance, temporal volume, degree distributions,
+       connected components, hybrid footprint, and anonymous static/interactive ego networks.
+       → `wiki/this-project/visualization.md`, `notebooks/02_project/03_eda_and_topology.ipynb`.
 6. [ ] **Vertical slice** — add one GNN (GCN or GraphSAGE), compare honestly to LightGBM on PR-AUC, write
        the short conclusion + results visuals. This closes roadmap Phase 3.5.
 

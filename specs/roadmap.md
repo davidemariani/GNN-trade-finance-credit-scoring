@@ -109,9 +109,11 @@ gating sweep before any applied work.
       (`wiki/this-project/evaluation.md`). Implemented in `src/graph_ml/baselines/`, tested without access
       to test labels, explained in `notebooks/02_project/02_tabular_baselines.ipynb`, and logged in
       `results/baseline_metrics.csv`. Overall LightGBM PR-AUC: 0.465. ✓
-- [ ] **EDA + topology visualization** (`src/graph_ml/viz/`, per `wiki/this-project/visualization.md`):
+- [x] **EDA + topology visualization** (`src/graph_ml/viz/`, per `wiki/this-project/visualization.md`):
       class imbalance, temporal volume, degree distributions, hybrid footprint, and an interactive
-      company↔instrument network view. This is both understanding and showcase material.
+      company↔instrument network view. This is both understanding and showcase material. Implemented as
+      tested aggregate/static/pyvis builders and explained with anonymous outputs in
+      `notebooks/02_project/03_eda_and_topology.ipynb`. ✓
 - [ ] `04_network_snapshots.pkl` snapshot semantics — deferred to the temporal phase, not needed for v1.
 
 > **Visualization is cross-cutting, not a phase.** Per `wiki/this-project/visualization.md`, each phase

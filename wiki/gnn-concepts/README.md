@@ -10,6 +10,8 @@ Planned entries (create as each is actually covered — don't pre-write stubs wi
 **Foundations** (mirrors `notebooks/00_foundations/`)
 - [Graph representations](graph-representations.md) (first covered in the applied graph-construction
   studybook; a deeper foundations notebook remains planned)
+- [Graph topology](graph-topology.md) (degree, hubs, components, and ego graphs; introduced in the EDA
+  studybook)
 - The message-passing framework
 - Spectral vs. spatial convolutions
 - Over-smoothing and GNN depth limitations

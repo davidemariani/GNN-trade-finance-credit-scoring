@@ -102,6 +102,10 @@ report. Hybrids touch **18.7%** of instruments (12,465 / 66,593) and every one a
 they are material bridge nodes, not noise. Consequence for graph construction: **resolve company identity
 by name**, giving one canonical company node per name (see `wiki/this-project/graph-design.md`).
 
+On the filtered 59,820-row modelling graph, the same 15 hybrids touch 12,464 instruments (**20.84%**).
+The one-row/count and percentage difference is purely the denominator/filtering stage; topology reporting
+for the implemented graph uses 20.84%. See `visualization.md`.
+
 ### Split-dependent facts relevant to modelling (at cutoff T = 2018-04-30, impairment)
 
 - **Cold-start**: ~56% of test-period companies are unseen in training; ~25.5% of test instruments involve

@@ -43,9 +43,21 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
   edges — small enough for full-batch training, no sampling infra needed yet.
 - Strong baseline (`wiki/this-project/evaluation.md`): LightGBM overall PR-AUC **0.465** / ROC AUC 0.913;
   seen PR-AUC 0.432, cold-start 0.387. At a 5% review budget overall precision is 49.03% and recall 43.68%.
+- Filtered graph topology (`wiki/this-project/visualization.md`): 45 components; largest contains 81.55%
+  of nodes; median company degree 5 vs. maximum 5,636; 15 hybrids touch 20.84% of modelling instruments.
 
 ## Decision log (most recent first — one line + why, link for detail)
 
+- **Applied notebooks adopt a visual teaching language (2026-08-01)**: tested schema, real anonymous ego,
+  receptive-field, cohort, ranking-curve, baseline, and importance figures now accompany the prose.
+  *Why*: each studybook should make abstract graph and evaluation objects inspectable without exposing
+  company identities or reducing the notebooks to unexplained charts. → `wiki/this-project/visualization.md`
+- **EDA/topology layer implemented (2026-08-01)**: tested aggregate/static/pyvis builders show severe
+  imbalance, temporal shift, heavy-tailed company degree, 45 components, and an anonymous hybrid ego
+  network; the filtered graph's hybrid footprint is 20.84% (not the pre-filter table's 18.7%). *Why*:
+  topology affects normalization, reachability, and the contagion claim, while anonymous bounded views
+  remain safe to publish. → `wiki/this-project/visualization.md`,
+  `notebooks/02_project/03_eda_and_topology.ipynb`
 - **Strong tabular baseline completed (2026-08-01)**: temporally validated LightGBM on instrument +
   cutoff-safe endpoint histories reaches PR-AUC 0.465 overall (0.432 seen / 0.387 cold-start), far above
   logistic's 0.074. *Why*: this is the honest bar the GNN must clear; beating a weak linear reference would
@@ -141,10 +153,10 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 ## Where things stand right now
 
 Planning/design is done (Phases 0-1 + the design decisions), the data is converted to Parquet (backup
-still open), and graph construction, temporal evaluation, and the strong LightGBM baseline are implemented,
-tested, and explained in the first three applied notebooks. The immediate next action is **EDA + topology
-visualization**, then the first GNN and the **Phase 3.5 vertical slice**. See `specs/roadmap.md` for the full
-phased plan and `BACKLOG.md` for the ordered next tasks.
+still open), and graph construction, temporal evaluation, the strong LightGBM baseline, and EDA/topology
+are implemented, tested, and explained in four applied notebooks. The immediate next action is the **first
+GNN and Phase 3.5 vertical slice**, compared against the 0.465 PR-AUC LightGBM bar. See
+`specs/roadmap.md` for the full phased plan and `BACKLOG.md` for the ordered next tasks.
 
 ## Map of the docs (what to read for what)
 

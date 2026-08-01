@@ -52,6 +52,40 @@ effort, covering most of the "interactive on the website" need without touching 
   legible on GitHub without running anything. Keep committed images small; large interactive HTML exports
   are build artifacts, not committed (see `viz-standards.md`).
 
+## EDA and topology implementation (2026-08-01)
+
+`src/graph_ml/viz/` now provides tested aggregate tables and matplotlib figures for class balance,
+monthly volume/impairment rate, company role-degree distributions, connected components, hybrid footprint,
+and bounded anonymous ego graphs. The same ego graph can be converted to pyvis for local draggable
+exploration; HTML remains an ignored build artifact. The executed studybook is
+`notebooks/02_project/03_eda_and_topology.ipynb`.
+
+Facts for the filtered 59,820-instrument modelling graph:
+
+- 45 connected components; the largest contains 81.55% of all instrument + company nodes;
+- median company total degree 5, 99th percentile 561, maximum 5,636 — strongly heavy-tailed;
+- 15 hybrids touch 12,464 instruments, or 20.84% of this filtered graph.
+
+The last number differs from the earlier 18.7% because that statistic used 12,465 / 66,593 instruments
+from the larger pre-filter table. The model-facing figure is 20.84%; both denominators remain explicit.
+
+## Visual studybook language (2026-08-01)
+
+The applied notebooks now use a consistent set of tested teaching figures from `src/graph_ml/viz/`:
+
+- notebook 00 moves from the typed business schema to an anonymous bounded neighborhood from the real
+  graph, then visualizes how a two-layer GNN's receptive field expands;
+- notebook 01 makes maturity/censoring and seen/cold-start cohort sizes visible, then places PR and ROC
+  curves beside their different no-skill references;
+- notebook 02 compares baseline PR-AUC against cohort prevalence and turns feature gain into a readable
+  ranking;
+- notebook 03 covers imbalance, time variation, heavy-tailed degrees, components, hybrid footprint, and
+  local topology.
+
+Every graph legend maps color to node or relation semantics. Real-data network figures expose anonymous
+topology only: generic `C*`/`I*` labels replace business identifiers, and bounded ego views replace an
+unreadable full-graph hairball.
+
 ## Deferred: Hugo dashboard / D3 (later milestone, not now)
 
 Redoing the original 2019 Bokeh dashboard as a showcase on a Hugo static site is an explicit **later**
