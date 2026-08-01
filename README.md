@@ -51,6 +51,6 @@ jupyter lab notebooks/
 
 ## Status
 
-Planning/design complete; implementation starting with the data pipeline. See `specs/roadmap.md` (its
-"plan at a glance" table) for the phased plan and current progress, and `STUDYBOOK.md` for a fast
-orientation + decision log.
+Planning/design, graph construction, temporal evaluation, and the strong LightGBM baseline are complete;
+EDA/topology visualization is next. See `specs/roadmap.md` (its "plan at a glance" table) for the phased
+plan and current progress, and `STUDYBOOK.md` for a fast orientation + decision log.

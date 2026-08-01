@@ -91,17 +91,24 @@ gating sweep before any applied work.
 - [x] **Convert working data to Parquet (zstd)** — done via `src/graph_ml/data/convert.py`, verified with
       an exact value-level round-trip check. Off-GitHub backup still open. See
       `wiki/this-project/data-availability.md` "Storage format & policy".
-- [ ] Implement graph construction (`src/graph_ml/data/`): build `HeteroData` with **company + instrument**
+- [x] Implement graph construction (`src/graph_ml/data/`): build `HeteroData` with **company + instrument**
       node types and role-typed edges, resolving company identity by **name** (unifies the 15 hybrids),
       per `graph-design.md`. Company features aggregated from pre-cutoff instruments only, built directly
       from the real data. Tests use small, hand-built in-memory fixtures per `testing-standards.md` — a
       full synthetic dataset was tried and dropped (see `wiki/this-project/data-availability.md`: labels
       independent of features defeat the point of testing whether real structure predicts real outcomes).
-- [ ] Implement the inductive temporal split + label-maturity filter + metrics (PR-AUC primary) exactly as
-      `evaluation.md` specifies; report seen vs. cold-start breakdown.
-- [ ] **Strong baseline**: LightGBM on instrument raw features + pre-T company aggregates (plus trivial +
+      Implemented in `src/graph_ml/data/graph.py`, covered by `tests/data/test_graph.py`, and explained in
+      `notebooks/02_project/00_graph_construction.ipynb`. ✓
+- [x] Implement the inductive temporal split + target-aware label-maturity filter + metrics (PR-AUC
+      primary) exactly as `evaluation.md` specifies; report seen vs. cold-start breakdown. Includes
+      edge-filtered training/inference graph views so test instruments cannot update company states.
+      Implemented in `src/graph_ml/evaluation/`, tested in `tests/evaluation/`, and explained in
+      `notebooks/02_project/01_temporal_split_and_metrics.ipynb`. ✓
+- [x] **Strong baseline**: LightGBM on instrument raw features + pre-T company aggregates (plus trivial +
       logistic-regression reference points) — this is the real bar the GNN must clear
-      (`wiki/this-project/evaluation.md`).
+      (`wiki/this-project/evaluation.md`). Implemented in `src/graph_ml/baselines/`, tested without access
+      to test labels, explained in `notebooks/02_project/02_tabular_baselines.ipynb`, and logged in
+      `results/baseline_metrics.csv`. Overall LightGBM PR-AUC: 0.465. ✓
 - [ ] **EDA + topology visualization** (`src/graph_ml/viz/`, per `wiki/this-project/visualization.md`):
       class imbalance, temporal volume, degree distributions, hybrid footprint, and an interactive
       company↔instrument network view. This is both understanding and showcase material.

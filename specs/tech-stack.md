@@ -8,7 +8,7 @@
 | ML framework | **PyTorch** (`torch`) | Apple M4 → MPS (Metal) backend for GPU acceleration, no CUDA needed on this machine. |
 | GNN library | **PyTorch Geometric** (`torch_geometric`) | Chosen over DGL for its tighter PyTorch integration and the breadth of example architectures/datasets useful for a learning-focused project. |
 | Classical ML (baselines) | `scikit-learn` | Logistic-regression / trivial baselines and metrics (PR-AUC, ROC AUC). |
-| Strong tabular baseline | `lightgbm` | Gradient-boosted trees — the *strong* modern baseline a GNN must actually beat to justify itself (the original used Random Forest; GBTs are the stronger 2020s equivalent). See `wiki/this-project/evaluation.md`. |
+| Strong tabular baseline | `lightgbm` + system `libomp` | Gradient-boosted trees — the *strong* modern baseline a GNN must actually beat to justify itself. On macOS the wheel requires `brew install libomp`. See `wiki/this-project/evaluation.md`. |
 | Graph handling / prototyping | `networkx` | Used for exploratory graph construction and visualization before/alongside `torch_geometric.data.Data` objects. |
 | Data storage | `pyarrow` (Parquet) | Working data stored as Parquet (zstd) — columnar, compressed (~7-14% of pickle size), safe (no arbitrary-code-execution on load), fast. Replaces the 2019 `.pkl` files. See `wiki/this-project/data-availability.md`. |
 | Notebooks | `jupyter` / `jupyterlab` | All educational and experiment notebooks. |
@@ -34,7 +34,7 @@ installed globally, into system Python, or shared with any other project.
 
 **To replicate on any machine:**
 ```bash
-brew install uv graphviz   # graphviz binary is needed only for torchview architecture diagrams
+brew install uv graphviz libomp   # graphviz: torchview; libomp: LightGBM on macOS
 git clone https://github.com/davidemariani/GNN-trade-finance-credit-scoring.git ~/graph_ml
 cd ~/graph_ml && uv sync
 source .venv/bin/activate

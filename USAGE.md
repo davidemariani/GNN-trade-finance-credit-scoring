@@ -8,13 +8,13 @@ Requires [`uv`](https://docs.astral.sh/uv/) (already installed on this machine) 
 Python involved.
 
 ```bash
-cd /Users/dmariani/graph_ml
+cd /path/to/GNN-trade-finance-credit-scoring
 uv sync              # creates/updates .venv and installs all deps from pyproject.toml + uv.lock
 source .venv/bin/activate
 ```
 
-Optional system dependency: `brew install graphviz` — only needed to *render* `torchview` architecture
-diagrams to image (the Python packages install fine without it; Mermaid diagrams need nothing).
+System dependencies on macOS: `brew install libomp` is required by LightGBM; `brew install graphviz` is
+optional and needed only to *render* `torchview` architecture diagrams (Mermaid needs nothing).
 
 Adding a new dependency (keeps `pyproject.toml` and `uv.lock` in sync — don't hand-edit or `pip install`
 directly into the venv):

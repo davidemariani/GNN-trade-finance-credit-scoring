@@ -20,15 +20,19 @@ and `evaluation.md`; these are just the build steps.
 1. [x] **Convert `data/` to Parquet (zstd)** — done via `src/graph_ml/data/convert.py`, verified with an
        exact value-level round-trip check. [ ] **Still open: back it up off-GitHub** (the data is currently
        laptop-only; originals kept until this happens). → `wiki/this-project/data-availability.md`.
-2. [ ] **Graph construction** (`src/graph_ml/data/`) — `HeteroData` with company + instrument node types,
+2. [x] **Graph construction** (`src/graph_ml/data/`) — `HeteroData` with company + instrument node types,
        role-typed edges, company identity by **name**, company features aggregated from pre-cutoff
        instruments only, built directly from the real Parquet data. Tests use small, hand-built in-memory
-       fixtures (a handful of rows with known expected output — see `testing-standards.md`), not a
-       full synthetic dataset (see `wiki/this-project/data-availability.md` for why that was dropped).
-3. [ ] **Split + metrics** — inductive temporal split, label-maturity filter, PR-AUC (+ ROC for
-       comparability); report seen vs. cold-start breakdown. → `evaluation.md`.
-4. [ ] **Strong baseline** — LightGBM on instrument features + pre-T company aggregates (plus trivial and
-       logistic-regression reference points).
+       fixtures (a handful of rows with known expected output — see `testing-standards.md`), not a full
+       synthetic dataset (see `wiki/this-project/data-availability.md` for why that was dropped). Done in
+       `src/graph_ml/data/graph.py`; the studybook treatment is
+       `notebooks/02_project/00_graph_construction.ipynb`.
+3. [x] **Split + metrics** — inductive temporal split, target-aware label-maturity filter, PR-AUC (+ ROC
+       for comparability), seen vs. cold-start breakdown, and leakage-safe training/inference edge views.
+       → `evaluation.md`, `notebooks/02_project/01_temporal_split_and_metrics.ipynb`.
+4. [x] **Strong baseline** — LightGBM on instrument features + pre-T company aggregates (plus trivial and
+       logistic-regression reference points). Overall PR-AUC 0.465; results split by seen/cold-start in
+       `results/baseline_metrics.csv`; studybook: `notebooks/02_project/02_tabular_baselines.ipynb`.
 5. [ ] **EDA + topology viz** (`src/graph_ml/viz/`) — imbalance, temporal volume, degree distributions,
        hybrid footprint, interactive company↔instrument network. → `wiki/this-project/visualization.md`.
 6. [ ] **Vertical slice** — add one GNN (GCN or GraphSAGE), compare honestly to LightGBM on PR-AUC, write

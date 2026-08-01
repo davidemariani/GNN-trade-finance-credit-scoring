@@ -36,13 +36,32 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
   IDs, 3,176 buyer IDs, dates 2013-07-23 to 2018-12-18. **15 hybrids** (companies that are both buyer and
   seller) — resolvable only by company *name*, since buyer/seller IDs are separate spaces; hybrids touch
   18.7% of instruments (the real network-contagion signal).
-- Split facts at T=2018-04-30 (impairment): ~56% of test companies unseen in training (cold-start),
-  ~32% of test instruments still `is_open` (label maturity) — both drive design choices, see evaluation.md.
+- Split facts at T=2018-04-30, A=2018-12-18 (impairment): 42,321 mature train / 9,293 mature test;
+  8,206 open negatives excluded as right-censored; 2,208 mature test instruments (23.76%) are cold-start.
+  Test prevalence is 5.62% overall, 4.12% seen, and 10.42% cold-start. → `evaluation.md`.
 - v1 graph (`wiki/this-project/graph-design.md`): company + instrument node types, ~63k nodes / ~120k
   edges — small enough for full-batch training, no sampling infra needed yet.
+- Strong baseline (`wiki/this-project/evaluation.md`): LightGBM overall PR-AUC **0.465** / ROC AUC 0.913;
+  seen PR-AUC 0.432, cold-start 0.387. At a 5% review budget overall precision is 49.03% and recall 43.68%.
 
 ## Decision log (most recent first — one line + why, link for detail)
 
+- **Strong tabular baseline completed (2026-08-01)**: temporally validated LightGBM on instrument +
+  cutoff-safe endpoint histories reaches PR-AUC 0.465 overall (0.432 seen / 0.387 cold-start), far above
+  logistic's 0.074. *Why*: this is the honest bar the GNN must clear; beating a weak linear reference would
+  prove little. → `wiki/this-project/evaluation.md`, `results/baseline_metrics.csv`,
+  `notebooks/02_project/02_tabular_baselines.ipynb`
+- **Temporal evaluation contract implemented (2026-08-01)**: T=2018-04-30, A=2018-12-18; impairment
+  labels mature when positive or closed, open negatives are right-censored; PR-AUC/ROC/top-k metrics and
+  seen/cold-start masks share leakage-safe training/inference graph views. *Why*: labels can be unknown,
+  and a graph test mask alone does not stop post-T messages contaminating company states.
+  → `wiki/this-project/evaluation.md`, `notebooks/02_project/01_temporal_split_and_metrics.ipynb`
+- **Graph construction implemented (2026-07-27)**: cutoff-fitted PyG `HeteroData` with 59,820 instrument
+  nodes, 3,349 name-resolved company nodes, role-typed reverse relations, origination-safe instrument
+  features, and role-specific pre-cutoff company history; eventual outcome aggregates are deferred
+  because their as-of-cutoff availability is not yet proven. *Why*: graph preprocessing is part of
+  leakage control, not a neutral formatting step. → `wiki/this-project/graph-design.md`,
+  `notebooks/02_project/00_graph_construction.ipynb`
 - **Synthetic data generator removed (2026-07-24), reversing the entry directly below.** Built, then
   deleted the same day: it drew labels independently of features by construction, so a model trained on it
   has nothing real to learn. Fine for "does the code run," but that's not this project's purpose — the
@@ -121,11 +140,11 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 
 ## Where things stand right now
 
-Planning/design is done (Phases 0-1 + the design decisions), and the data is converted to Parquet
-(`src/graph_ml/data/convert.py`, backup still open). The immediate next action is **graph construction**
-against the real data directly (no synthetic substitute — see the decision log), then split/metrics →
-LightGBM baseline → the **Phase 3.5 vertical slice** (the priority milestone). See `specs/roadmap.md` for
-the full phased plan (and the "plan at a glance" table) and `BACKLOG.md` for the ordered next tasks.
+Planning/design is done (Phases 0-1 + the design decisions), the data is converted to Parquet (backup
+still open), and graph construction, temporal evaluation, and the strong LightGBM baseline are implemented,
+tested, and explained in the first three applied notebooks. The immediate next action is **EDA + topology
+visualization**, then the first GNN and the **Phase 3.5 vertical slice**. See `specs/roadmap.md` for the full
+phased plan and `BACKLOG.md` for the ordered next tasks.
 
 ## Map of the docs (what to read for what)
 

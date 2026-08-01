@@ -8,13 +8,15 @@ matters, pointer to the notebook that teaches it in depth). Starts empty and fil
 Planned entries (create as each is actually covered — don't pre-write stubs with no content):
 
 **Foundations** (mirrors `notebooks/00_foundations/`)
-- Graph representations (adjacency matrix, edge list, `torch_geometric.data.Data`)
+- [Graph representations](graph-representations.md) (first covered in the applied graph-construction
+  studybook; a deeper foundations notebook remains planned)
 - The message-passing framework
 - Spectral vs. spatial convolutions
 - Over-smoothing and GNN depth limitations
-- Transductive vs. inductive learning on graphs
-- Heterogeneous graphs (relevant given the buyer/seller/hybrid node typing in this project — see
-  `wiki/original-project/limitations-and-motivation-for-gnn.md`)
+- [Transductive vs. inductive learning](transductive-vs-inductive.md) (introduced in the temporal
+  evaluation studybook)
+- [Heterogeneous graphs](heterogeneous-graphs.md) (first covered in the applied graph-construction
+  studybook)
 - Temporal / dynamic graph learning (relevant given the non-stationary transaction network)
 
 **Architectures** (mirrors `notebooks/01_architectures/`)

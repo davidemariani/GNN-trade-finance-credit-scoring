@@ -62,13 +62,23 @@ owe as a buyer" — the asymmetry the bond-graph effort/flow direction encoded b
 
 ## Node features (revised — resolves the embedding/inductive contradiction)
 
-- **Instrument nodes**: raw "Tier-0" attributes only (amount, currency, factoring/transaction type, and
-  dates converted to *relative* features — see evaluation.md on not leaking absolute calendar position).
-  Deliberately **not** the original's hand-engineered Tier 1/Tier 2 features (`cd_*`, `imp_*`,
-  `flow_shock_*`) — reproducing those defeats the point of using a GNN.
+- **Instrument nodes**: origination-time "Tier-0" attributes only, implemented as log invoice amount,
+  purchase/invoice ratio, payment-term days, input-lag days, and cutoff-fitted one-hot encodings of
+  currency and factoring type. Numeric medians/means/scales and categorical vocabularies are fitted on
+  pre-T instruments only; post-T categories unseen during fitting map to an explicit `__unknown__`
+  feature. Lifecycle fields such as `purchase_amount_open`, last payment, discharge, and final document
+  status are excluded because they reveal information that was not necessarily available when the
+  instrument originated. The original hand-engineered Tier 1/Tier 2 features (`cd_*`, `imp_*`,
+  `flow_shock_*`) are also deliberately excluded — reproducing those defeats the point of using a GNN.
 - **Company nodes**: **features aggregated from that company's instruments dated strictly before the split
-  cutoff T** (e.g. count of prior instruments, prior repaid/impaired/pastdue rates, mean payment-date
-  mismatch) — NOT a per-node learned embedding, and NOT computed over the whole dataset.
+  cutoff T** — NOT a per-node learned embedding, and NOT computed over the whole dataset. The implemented
+  v1 vector contains seller-role and buyer-role history counts plus role-specific means of the four
+  numeric origination features above. A post-T-only company gets an all-zero vector.
+  - *Why v1 does not yet include prior outcome rates*: the instrument table holds eventual impairment/
+    repayment outcomes, not a proven as-of-T state. Aggregating those final outcomes merely because an
+    invoice originated before T could leak resolutions that happened after T. Outcome-history aggregates
+    stay deferred until the temporal snapshot semantics can establish what was actually known at the
+    cutoff. This is more conservative than the earlier illustrative list of company aggregates.
   - *Why not pure learned embeddings (the earlier draft's choice)*: a per-node learned embedding is
     inherently **transductive** — a company absent from training has no trained vector. On this data
     **56% of test-period companies are unseen in training**, and **25.5% of test instruments involve a
@@ -102,6 +112,28 @@ clearest signal); p90/p180 deferred until the single-target pipeline is validate
 revisit multi-task. Metrics, the label-maturity/censoring rule, the split, and the baseline set are
 defined in `wiki/this-project/evaluation.md` — not here, to keep one home per concern.
 
+## Implemented graph artifact (2026-07-27)
+
+`src/graph_ml/data/graph.py` now constructs this schema as a PyG `HeteroData` object, with deterministic
+instrument/company mappings returned as separate metadata. Instruments are ordered by invoice date then
+UID; companies are ordered by their conservative normalized-name key. The four stored directed relations
+are `instrument → sold_by → company`, its `company → sells → instrument` reverse, `instrument → owed_by →
+company`, and its `company → owes → instrument` reverse.
+
+On `02_instrumentsdf_2.parquet` at T=2018-04-30 the build produces:
+
+- 59,820 instrument nodes with 12 features;
+- 3,349 canonical company nodes with 10 history features;
+- 119,640 underlying role edges (239,280 directed edges when the required reverse stores are counted);
+- 46,102 pre-cutoff and 13,718 post-cutoff instruments;
+- 849 companies with zero pre-cutoff history.
+
+The graph carries a `pre_cutoff_mask` as temporal metadata, but that is deliberately **not yet the final
+training mask**: label maturity and the inductive train/test views belong to the next evaluation-pipeline
+step. The implementation is explained end-to-end in
+`notebooks/02_project/00_graph_construction.ipynb` and tested with hand-built in-memory tables in
+`tests/data/test_graph.py`.
+
 ## Known simplification of v1 (honest scope)
 
 With a 2-layer GNN, an instrument's receptive field reaches its companies (1 hop) and its sibling
@@ -114,6 +146,4 @@ covers it would be overclaiming.
 
 ## Open items (decide when reached)
 
-- Exact cutoff T (original used 30 Apr 2018 for impairment) — see evaluation.md.
-- Which company aggregates to include as features (keep small and defensible for v1).
-- Self-loops / normalization details — implementation-level, decide when writing `src/graph_ml/data/`.
+- Self-loops / normalization details — model-level, decide with the first GNN architecture.
