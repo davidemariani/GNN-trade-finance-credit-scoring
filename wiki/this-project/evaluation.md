@@ -47,8 +47,10 @@ original graph indices:
   to all instruments observed by the analysis date. Post-T test instruments receive frozen historical
   company context but cannot update company states or contaminate one another.
 
-This is a conservative **fixed-origin** evaluation. A later temporal model may roll history forward, but
-only with strictly time-ordered message passing. Implementation:
+This is a **fixed-origin, final-snapshot benchmark**, not yet a fully point-in-time deployment simulation.
+The edge views prevent post-T instruments from changing historical company states, but the label and
+feature-time limitations documented below still apply. A later temporal model may roll history forward,
+but only with strictly time-ordered feature construction and message passing. Implementation:
 `src/graph_ml/evaluation/split.py`; studybook: `notebooks/02_project/01_temporal_split_and_metrics.ipynb`.
 
 ## Label maturity / censoring (must handle — easy to get silently wrong)
@@ -80,6 +82,52 @@ The prevalence shift is itself an important result: later and especially cold-st
 riskier, so every model report must show cohort prevalence beside PR-AUC. Excluding censored negatives can
 also select toward faster-resolving instruments; survival analysis is a possible later extension, but is
 outside the v1 binary-classification scope.
+
+## Leakage audit (2026-08-02)
+
+“Temporal split” is not by itself proof of point-in-time correctness. The audit traced every v1 input,
+label mask, preprocessing fit, and message-passing edge.
+
+| Question | Finding |
+|---|---|
+| Do post-T feature rows enter fitted transforms or company histories? | **No.** Numeric transforms, categorical vocabularies, and company histories are fitted from pre-T instruments only. |
+| Are lifecycle or eventual-outcome fields model inputs? | **No.** The 12 instrument features and 10 company-history features contain origination attributes only. LightGBM receives 32 columns formed from those same tensors. |
+| Can test instruments update companies or one another during GNN inference? | **No.** Only pre-T instruments send messages into company states. Tests also flip post-T labels and verify unchanged scores. |
+| Were pre-T training labels necessarily known at T? | **Not established.** The mask uses final-snapshot `has_impairment1` and `is_open` observed at A, not an event-availability state at T; lifecycle dates show material post-T activity. |
+| Is every training row represented using only history earlier than that row? | **No.** All pre-T endpoint histories and the static training graph are built through T, so an early invoice can see later pre-T sibling attributes/topology. |
+| Is the internal validation block point-in-time clean? | **No.** The split is chronological, but preprocessing and company histories are fitted through T, including validation-period feature distributions and topology. No validation labels enter features, but model selection is not a clean rolling-origin simulation. |
+
+The most consequential issue is label timing. For both train and test, maturity is evaluated using final
+state at A=2018-12-18. Therefore a pre-T invoice can be admitted to training because it closed or impaired
+*after* T=2018-04-30. As a concrete diagnostic proxy, **3,027 / 42,321** current mature training rows
+have at least one recorded lifecycle timestamp (`last_payment_date`, `discharge_date`,
+`cancellation_date`, or `debt_collection_date`) on/after T; 2,932 are closed negatives and 95 positives.
+These fields are incomplete and are not a definitive event-time reconstruction, so this count diagnoses
+the problem rather than solving it.
+
+Consequently, the reported LightGBM 0.465 and GraphSAGE 0.305 PR-AUC results remain useful controlled
+comparisons under one shared retrospective protocol, but they must not be described as unbiased
+prospective performance at T. The audit cannot certify “no leakage anywhere” until target event times and
+as-of label availability are reconstructed.
+
+The audit was also extended to the original Tier-1 and bond-graph tables. Their stored outcome histories
+and propagated flows cannot be certified as-of-time, and the final bond artifacts contain cross-target
+duplication/stage-mutation anomalies. They are not v1 inputs and remain prohibited unless regenerated
+inside temporal folds. See `bond-graph-leakage-audit.md`.
+
+### Required point-in-time protocol
+
+1. Define each prediction time `t_i` (normally invoice origination/input time) and the business prediction
+   horizon.
+2. Supervise a row only when its outcome was knowable at that fold's training cutoff. If impairment event
+   time cannot be recovered, prefer a target with an explicit due-date-plus-horizon rule (p90/p180), or
+   model time-to-event/censoring directly.
+3. Build endpoint histories with cumulative, shifted operations using events strictly before `t_i`; never
+   include the current row or a later sibling.
+4. Use rolling-origin train/validation/test folds. Fit scalers, category vocabularies, aggregates, and
+   graph topology on the training window only.
+5. Rebuild a time-aware LightGBM baseline and a temporal GNN from the same as-of feature/event stream.
+   Only then does their comparison isolate the value of temporal message passing.
 
 ## Cold-start companies
 
@@ -128,7 +176,8 @@ thread. Implementation: `src/graph_ml/baselines/tabular.py`; executed studybook:
 ¹All base-rate scores tie, so its top-k set follows stable row order and has no operational meaning; its
 PR-AUC equals cohort prevalence and ROC AUC is 0.5, which are the actual no-ranking references.
 
-**Interpretation:** the GNN must clear **0.465 overall PR-AUC**, not merely beat logistic regression.
+**Interpretation within the current retrospective protocol:** the GNN must clear **0.465 overall PR-AUC**,
+not merely beat logistic regression.
 Cold-start PR-AUC is lower despite high ROC AUC and a much higher 10.42% base rate, so the subgroup remains
 the harder operational problem. LightGBM gain importance is dominated by endpoint history counts and
 buyer-history amount/timing summaries; this supports the value of company context but does not establish

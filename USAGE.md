@@ -55,6 +55,12 @@ in `notebooks/01_architectures/graphsage.ipynb`; the real-data comparison is
 `notebooks/02_project/04_hetero_graphsage.ipynb`. Both require Graphviz only when re-rendering the traced
 computational graph; their committed outputs remain visible without rerunning.
 
+The current `data/` workspace has the eight Parquet pipeline stages, but not the historical
+`04_network_snapshots.pkl` or original pickle files. The `00`–`04` results use a final-snapshot cohort and
+should be read as retrospective benchmarks. Do not start a temporal-model run until event/label timestamp
+semantics have been audited; see `wiki/this-project/evaluation.md` and
+`wiki/this-project/data-availability.md`.
+
 ## Git / GitHub
 
 This repo is isolated from the rest of the machine — local git identity is the personal

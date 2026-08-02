@@ -1,27 +1,27 @@
-# This project: data availability (confirmed 2026-07-23)
+# This project: data availability (confirmed 2026-07-23; filesystem re-audited 2026-08-02)
 
-Unlike the default assumption in `specs/roadmap.md` Phase 1 (that the original dataset was likely
-inaccessible), the owner has the **actual pipeline artifacts from the 2019 thesis** in `data/`
-(gitignored — local-only, never committed; see `CONSTITUTION.md` §2). This resolves the open dataset
-question: **all modelling and pipeline development uses the real anonymized data directly** (no synthetic
-substitute — see "Storage format & policy" below for why that was tried and dropped).
+The current local `data/` directory contains the eight converted Parquet artifacts from the 2019 thesis
+pipeline (gitignored, local-only, never committed; see `CONSTITUTION.md` §2). All implemented modelling
+uses this real anonymized data directly. The original pickle files and the large temporal snapshot file
+are **not present in the current workspace as of 2026-08-02**; their backup/recovery status is unknown and
+must be resolved before relying on them.
 
 ## Files present, in pipeline order
 
 | File | Shape | Role |
 |---|---|---|
-| `00_transactionsdf_simNames.pkl` | 163,437 × 37 | Raw anonymized transactions (simulated company names), matches `wiki/original-project/data-and-network-construction.md`. Date range 2007-02-06 to 2018-12-18. |
-| `01_instrumentsdf.pkl` | 66,593 × 37 | Deduplicated/cleaned instruments, snake_case columns, `uid` assigned. |
-| `02_instrumentsdf_2.pkl` | 59,820 × 57 | Adds target/status flags: `has_impairment1`, `is_pastdue`/`30`/`90`/`180`, `has_prosecution`, `is_open`, etc. |
-| `03_instrumentsdf_deg1stats.pkl` | 59,820 × 110 | Adds Tier 1 "trade relationship" features (`cd_*`, `d_*`, `c_*` — see `wiki/original-project/feature-engineering.md`). |
-| `04_instrumentsdf_bondgraph.pkl` | 59,820 × 130 | Adds Tier 2 bond-graph features (`imp_*`, `p90_*`, `p180_*`, `flow_shock_*`). |
-| `04_instrumentsdf_bondgraph2.pkl` | 59,820 × 135 | Same as above + one-hot currency columns — **the final modeling-ready dataset** from the original pipeline. |
-| `04_network_snapshots.pkl` | 59,820 × 3,217 | Per-instrument state repeated across ~247 rolling time snapshots (`sshot_0_*` ... `sshot_246_*`: payment/delay/status fields per window) — **this is the closest thing to genuine temporal/sequential data** in the original pipeline and the most directly useful artifact for a temporal-graph approach. 1.5GB, loads in ~9s. |
-| `inst_buyer.pkl` | 3,234 × 9 | Per-buyer (debtor) rollup of credit-event flags. |
-| `inst_seller.pkl` | 130 × 9 | Per-seller (customer) rollup of credit-event flags. |
+| `00_transactionsdf_simNames.parquet` | 163,437 × 37 | Transaction-line level source: raw lifecycle/payment dates and amounts; multiple records may belong to one instrument. |
+| `01_instrumentsdf.parquet` | 66,593 × 37 | Deduplicated/aggregated instrument level with `uid`; several transaction fields remain as ragged arrays. |
+| `02_instrumentsdf_2.parquet` | 59,820 × 57 | Filtered modelling cohort plus final-snapshot target/status fields such as `has_impairment1`, past-due flags and `is_open`. This is the current v1 source. |
+| `03_instrumentsdf_deg1stats.parquet` | 59,820 × 110 | Adds Tier-1 relationship and outcome aggregates (`cd_*`, `d_*`, `c_*`). Not used in v1; many require point-in-time reconstruction before reuse. |
+| `04_instrumentsdf_bondgraph.parquet` | 59,820 × 130 | Adds Tier-2 bond-graph features (`imp_*`, `p90_*`, `p180_*`, `flow_shock_*`). Not used in v1; the leakage audit found a cross-target duplicate shock column. |
+| `04_instrumentsdf_bondgraph2.parquet` | 59,820 × 135 | Nominally adds currency columns and p180 effort, but also mutates 14 bond columns and contains identical p90/p180 families. Not used as v1 input. |
+| `inst_buyer.parquet` | 3,234 × 9 | Buyer-level final event rollup. Not point-in-time safe without temporal reconstruction. |
+| `inst_seller.parquet` | 130 × 9 | Seller-level final event rollup. Not point-in-time safe without temporal reconstruction. |
 
-All files load cleanly with the current environment's pandas (3.0) despite being pickled in 2019 —
-no compatibility shim needed.
+Historical inspection described `04_network_snapshots.pkl` as a 59,820 × 3,217 table with roughly 247
+rolling snapshots. It is absent now, so those dimensions and semantics are historical notes, not a
+currently verified input. Recovery must be followed by a column-by-column timestamp/availability audit.
 
 ## Storage format & policy (decided 2026-07-24)
 
@@ -47,12 +47,11 @@ no compatibility shim needed.
   small hand-built test fixtures (`testing-standards.md`), notebook outputs, and results logs/visuals
   committed as artifacts — not by re-running the modelling pipeline themselves. Revisit only if a
   lower-effort way to give fake data real learnable structure turns up later.
-- **Backup → off-GitHub.** The data currently exists only on this laptop and is explicitly unsynced (the
-  "GitHub is the single source of truth" claim in `tech-stack.md` is true for code, **not** for data). It
-  should be backed up once to a private location (private Release asset / cloud storage) so a laptop
-  failure doesn't lose the dataset that underpins the whole project.
-- **The 1.5 GB `04_network_snapshots.pkl`** is only needed for the deferred temporal phase — convert/keep
-  it only when that phase starts, and consider storing just the columns/downsample actually needed.
+- **Backup/recovery → open and now urgent.** The current Parquet files exist locally, but the historical
+  pickles and `04_network_snapshots.pkl` do not. Locate any private backup/source copy, document it, and
+  restore the snapshot only into gitignored storage. Do not infer why files disappeared without evidence.
+- **The historical `04_network_snapshots.pkl`** is a candidate for temporal work, not yet a dependency.
+  After recovery, retain/convert only verified columns needed for as-of event and label reconstruction.
 - **Further anonymization**: revisit later if the data is ever to be shared more widely; not needed while
   it stays local-only.
 
@@ -77,8 +76,8 @@ Two **cosmetic, non-lossy** representation changes downstream code must expect, 
   Code reading these columns from Parquet should expect arrays, not lists — an `isinstance(x, list)` check
   written against the old pickles would silently break.
 
-The original `.pkl` files are **kept for now** (not deleted) until the off-GitHub backup above actually
-exists — deleting the only copy of the real data before a backup is confirmed would be needless risk.
+The original `.pkl` files are **not present in this workspace** as of the latest audit. The Parquet
+round-trip was previously verified, but that does not replace the missing temporal snapshot.
 
 ## Confirmed stats (re-derived directly — supersedes rounded figures in the report where they differ)
 
@@ -118,10 +117,15 @@ for the implemented graph uses 20.84%. See `visualization.md`.
 ## Implications for the roadmap
 
 - Phase 3's dataset decision is resolved: **use this real data**, not a public/synthetic substitute.
-- `04_network_snapshots.pkl`'s snapshot structure is a strong candidate as the basis for temporal graph
-  construction (see `wiki/original-project/limitations-and-motivation-for-gnn.md` on why temporal-aware
-  modeling matters here) — worth understanding its exact snapshot semantics (what time window each
-  `sshot_N` corresponds to) before building on it.
+- Recover `04_network_snapshots.pkl` if possible and establish what each `sshot_N` timestamp means, when
+  target events become observable, and whether values are cumulative or windowed. Until then, the existing
+  transaction/lifecycle dates may support reconstruction, but their semantics must be validated.
+- The 2026-08-02 leakage audit found that final-snapshot `is_open`/eventual labels are used for both sides
+  of the current split. Current scores are therefore retrospective benchmarks, not certified as-of-T
+  deployment estimates. See `evaluation.md`.
+- The stored Tier-1/Tier-2 tables are not approved shortcuts for temporal reconstruction: outcome
+  availability is unproven, bond propagation can use future topology, and the two `04` stages have
+  value-level consistency anomalies. See `bond-graph-leakage-audit.md`.
 - Graph construction (company + instrument nodes, role-typed edges — see `graph-design.md`) can be derived
   directly from `00_transactionsdf_simNames.pkl` or `01_instrumentsdf.pkl`, resolving company identity by
   name so hybrids unify correctly.

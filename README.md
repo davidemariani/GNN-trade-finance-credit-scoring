@@ -51,10 +51,13 @@ jupyter lab notebooks/
 
 ## Status
 
-Planning/design, graph construction, temporal evaluation, EDA/topology, and the first complete model
+Planning/design, graph construction, fixed-origin evaluation, EDA/topology, and the first complete model
 comparison are implemented. Relation-aware GraphSAGE reaches 0.305 PR-AUC at seed 42 but only
 0.244 ± 0.079 across five frozen-configuration seeds, below the strong LightGBM baseline's 0.465. The
 result, including seen/cold-start breakdowns and visual diagnostics, is recorded honestly rather than
-tuned against test labels. See
+tuned against test labels. A 2026-08-02 audit found no direct outcome fields in either model's inputs and
+confirmed post-cutoff message isolation, but also found that final-snapshot label maturity and cutoff-wide
+training histories are not fully point-in-time. These scores are therefore retrospective benchmarks; the
+next milestone is an as-of event/label pipeline, time-aware LightGBM baseline, and temporal GNN. See
 `specs/roadmap.md` (its "plan at a glance" table) for the phased plan and current progress, and
 `STUDYBOOK.md` for a fast orientation + decision log.

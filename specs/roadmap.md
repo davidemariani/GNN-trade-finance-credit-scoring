@@ -12,6 +12,7 @@ only the currently-active, finer-grained tasks and points here for the full pict
 | — | Design & methodology decisions (graph, evaluation, visualization, data storage) | ✅ done |
 | 3 | Data pipeline + **strong (LightGBM) baseline** | ✅ done |
 | 3.5 | **v1 vertical slice** — data → baseline → one GNN → honest comparison (the priority) | ✅ done |
+| 3.6 | **Point-in-time remediation** — causal labels/features → tabular baseline → temporal GNN | ⬜ next |
 | 2 | GNN foundations notebooks (backfilled *around* the slice) | ⬜ ongoing |
 | 4 | GNN architectures (GCN→GraphSAGE→GAT→GIN) + applied model choice | ⬜ |
 | 5 | Portfolio quality gate | ⬜ |
@@ -20,9 +21,10 @@ only the currently-active, finer-grained tasks and points here for the full pict
 **Execution order (not strictly by phase number).** Phases 0-1, the design decisions, Phase 3, and the
 Phase 3.5 vertical slice are done. The slice establishes the first honest result: relation-aware
 GraphSAGE reaches 0.305 PR-AUC at seed 42 and 0.244 ± 0.079 across five seeds, but does not beat
-LightGBM's 0.465. Phase 2 (foundations) and Phase 4
-(architectures) can now be backfilled around that concrete evidence, followed by the portfolio quality
-gate. Visualization remains cross-cutting. Phase 6 is explicitly deferred and blocks nothing.
+LightGBM's 0.465. A subsequent audit classifies both as retrospective final-snapshot benchmarks because
+label availability and within-training history are not fully as-of-time. Phase 3.6 therefore comes next;
+Phase 2 foundations continue alongside it, while broader architecture comparisons wait for the corrected
+yardstick. Visualization remains cross-cutting. Phase 6 is explicitly deferred and blocks nothing.
 
 Check items off as they're completed — the checkboxes below are the current status, not chat history.
 
@@ -52,9 +54,10 @@ Check items off as they're completed — the checkboxes below are the current st
       wrote up a full summary across `wiki/original-project/`: `overview.md`, `glossary.md`,
       `data-and-network-construction.md`, `feature-engineering.md`, `modelling-and-validation.md`,
       `results.md`, `limitations-and-motivation-for-gnn.md` ✓
-- [x] Confirmed the original anonymized dataset **is** accessible — the owner has the full original
-      pipeline artifacts (raw transactions through final bond-graph features, plus a temporal snapshot
-      file) locally in `data/` (gitignored). See `wiki/this-project/data-availability.md`. ✓
+- [x] Confirmed the original anonymized tabular pipeline **is** accessible. The current `data/` inventory
+      contains eight Parquet artifacts from raw transactions through final bond-graph features. The
+      historical temporal snapshot is no longer present and recovery is a Phase 3.6 task. See
+      `wiki/this-project/data-availability.md`. ✓
 
 ---
 
@@ -113,7 +116,8 @@ gating sweep before any applied work.
       company↔instrument network view. This is both understanding and showcase material. Implemented as
       tested aggregate/static/pyvis builders and explained with anonymous outputs in
       `notebooks/02_project/03_eda_and_topology.ipynb`. ✓
-- [ ] `04_network_snapshots.pkl` snapshot semantics — deferred to the temporal phase, not needed for v1.
+- [ ] Recover `04_network_snapshots.pkl` if possible and audit its timestamp/availability semantics; it is
+      absent from the current workspace and was not needed for v1.
 
 > **Visualization is cross-cutting, not a phase.** Per `wiki/this-project/visualization.md`, each phase
 > produces its own visuals: EDA/topology here (Phase 3), architecture/message-passing diagrams in Phase 4,
@@ -137,6 +141,34 @@ then backfill foundations (Phase 2) and architectures (Phase 4) around it.
       0.465 / 0.432 / 0.387. Conclusion and visuals: `notebooks/02_project/04_hetero_graphsage.ipynb`;
       run log: `results/gnn_metrics.csv`. A frozen five-seed robustness pass finds overall
       0.244 ± 0.079 (range 0.115–0.305), so seed 42 is explicitly not presented as typical. ✓
+
+---
+
+## Phase 3.6 — Point-in-time remediation and temporal modelling — **NEXT**
+
+**Goal:** turn the retrospective vertical slice into a causal, deployment-like comparison before spending
+the test budget on more architecture tuning.
+
+- [ ] Recover/audit event-time sources and define prediction time, target horizon, event timestamp, closure,
+      censoring, and simultaneous-event semantics. Do not treat `debt_collection_date` as impairment time
+      without evidence.
+- [ ] Implement strictly-as-of company histories and label-availability masks. Every row sees events
+      `< t_i`; cumulative aggregates are shifted; preprocessing is fitted inside each training fold.
+      Generic strictly-prior history construction plus a lifecycle/outcome/bond schema guard are now
+      implemented and tested in `src/graph_ml/data/temporal.py`; graph/baseline integration remains.
+- [ ] Add adversarial leakage tests: modifying future labels/features/topology must not change earlier
+      features, labels, selected hyperparameters, embeddings, or scores.
+- [ ] Use rolling-origin validation/test windows and report prevalence, seen/cold-start status, and multiple
+      time folds. If impairment timing cannot be established, use an explicit p90/p180 horizon or survival
+      formulation rather than inventing event times.
+- [ ] Re-run LightGBM first on the point-in-time feature stream, then compare a role-aware temporal
+      GraphSAGE using event age/recency and causal company-state updates. Report multiple neural seeds.
+- [ ] Create a visual studybook showing an event timeline, legal/illegal messages, rolling folds, company
+      memory updates, and the temporal-vs-tabular comparison.
+
+Detailed audit: `wiki/this-project/evaluation.md`; concept guide:
+`wiki/gnn-concepts/temporal-graphs.md`; bond-feature audit:
+`wiki/this-project/bond-graph-leakage-audit.md`.
 
 ---
 

@@ -25,6 +25,8 @@ See `specs/instructions/wiki-standards.md` for how and when to add to it.
   - `data-availability.md` — what data exists, confirmed stats, hybrids, and the Parquet/storage policy.
   - `graph-design.md` — the company+instrument graph schema, node features, leakage handling.
   - `evaluation.md` — metrics (PR-AUC primary), split, label maturity, cold-start, baselines, logging.
+  - `bond-graph-leakage-audit.md` — provenance risks and value-level anomalies in the original engineered
+    Tier-1/Tier-2 artifacts.
   - `visualization.md` — the visualization approach, tooling, and the deferred D3/Hugo showcase.
 
 ## How agents should use this

@@ -48,11 +48,27 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 
 ## Decision log (most recent first — one line + why, link for detail)
 
+- **Original bond features are quarantined pending causal regeneration (2026-08-02)**: Tier-1 outcome
+  histories are shifted by invoice order but do not prove the earlier outcomes were observable; Tier-2
+  flows propagate those rates and can also see future topology. The stored artifacts additionally contain
+  exact p90/p180 feature-family duplicates and unexplained stage mutations. *Why*: target-derived network
+  features are only safe when built from strictly prior known events inside each fold. A tested schema
+  guard and strictly-prior history primitive now start that replacement. →
+  `wiki/this-project/bond-graph-leakage-audit.md`, `src/graph_ml/data/temporal.py`
+- **Point-in-time leakage audit changes the next milestone (2026-08-02)**: v1 excludes lifecycle/outcome
+  fields from model inputs and blocks post-T feature/message contamination, but its final-snapshot label
+  maturity can admit outcomes learned after T, while cutoff-wide endpoint histories let early training
+  rows see later pre-T attributes/topology. The 0.465 LightGBM and 0.305 seed-42 GraphSAGE PR-AUC scores
+  remain comparable retrospective benchmarks, not certified prospective estimates. *Why*: time must be
+  represented in features, labels, preprocessing, validation, and graph messages—not just the train/test
+  mask. Next: recover/verify event-time data, build strictly-as-of histories and a rolling-origin tabular
+  baseline, then temporal GraphSAGE. → `wiki/this-project/evaluation.md`,
+  `wiki/gnn-concepts/temporal-graphs.md`
 - **First GNN vertical slice completed (2026-08-02)**: deterministic relation-aware GraphSAGE reaches
   PR-AUC 0.305 overall / 0.291 seen / 0.319 cold-start at seed 42, below LightGBM's
   0.465 / 0.432 / 0.387; five frozen seeds average only 0.244 ± 0.079 overall. *Why*: GraphSAGE matches
   the inductive typed graph, but two-hop mean aggregation is both weaker than a strong tree over
-  cutoff-safe endpoint histories and initialization-sensitive; the negative result narrows the next
+  post-T-isolated endpoint histories and initialization-sensitive; the negative result narrows the next
   questions without weakening the test contract. → `wiki/this-project/evaluation.md`,
   `notebooks/02_project/04_hetero_graphsage.ipynb`, `results/gnn_metrics.csv`
 - **Applied notebooks adopt a visual teaching language (2026-08-01)**: tested schema, real anonymous ego,
@@ -66,7 +82,7 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
   remain safe to publish. → `wiki/this-project/visualization.md`,
   `notebooks/02_project/03_eda_and_topology.ipynb`
 - **Strong tabular baseline completed (2026-08-01)**: temporally validated LightGBM on instrument +
-  cutoff-safe endpoint histories reaches PR-AUC 0.465 overall (0.432 seen / 0.387 cold-start), far above
+  post-T-isolated endpoint histories reaches PR-AUC 0.465 overall (0.432 seen / 0.387 cold-start), far above
   logistic's 0.074. *Why*: this is the honest bar the GNN must clear; beating a weak linear reference would
   prove little. → `wiki/this-project/evaluation.md`, `results/baseline_metrics.csv`,
   `notebooks/02_project/02_tabular_baselines.ipynb`
@@ -105,8 +121,9 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
   the repo, not just the top-level one — it was hiding the brand-new `src/graph_ml/data/` and `tests/data/`
   source code from git. Fixed to `/data/` (anchored). *Why it matters*: caught before any commit, but would
   have silently lost source code otherwise — a reminder to `git status`-check after adding any new
-  top-level-named directory. Originals kept until the off-GitHub backup is actually done (not yet — backup
-  location is still an open choice). → `wiki/this-project/data-availability.md`
+  top-level-named directory. The later 2026-08-02 filesystem audit found only the converted Parquet files;
+  the historical pickles and temporal snapshot are no longer present locally, so recovery is now explicit
+  work. → `wiki/this-project/data-availability.md`
 - **Visualization approach (2026-07-24)**: Python stack — matplotlib (static, GitHub-rendered) + Plotly
   (interactive, Hugo-ready HTML export) + pyvis (interactive network topology); Mermaid + torchview for
   architecture/message-passing diagrams. Visualization is cross-cutting (woven into every phase, reusable
@@ -127,12 +144,12 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
   gradient-boosting baseline). *Why*: correctness holes + honest-benchmarking. → `wiki/this-project/graph-design.md`, `wiki/this-project/evaluation.md`
 - **Graph design v1** (superseded in part by the review above): heterogeneous, static, instrument-centric;
   node classification on impairment only for v1; inductive train/test split for leakage control. *Why*:
-  matches label granularity, avoids clique-blowup of a homogeneous instrument graph, closes the time-leak
-  failure mode the original fought. → `wiki/this-project/graph-design.md`
-- **Confirmed real dataset available**: owner has the full original pipeline's pickled artifacts locally
-  in `data/` (gitignored), not just raw data — every stage from raw transactions to the final bond-graph
-  feature set, plus a temporal snapshot file. *Why it matters*: no public/synthetic dataset substitute
-  needed. → `wiki/this-project/data-availability.md`
+  matches label granularity and avoids clique-blowup of a homogeneous instrument graph. The later audit
+  showed that cutoff isolation does not close every point-in-time leak. → `wiki/this-project/graph-design.md`
+- **Confirmed real dataset available (historical entry, availability revised 2026-08-02)**: the full
+  pipeline was inspected and converted; the current workspace retains all eight Parquet stages but no
+  original pickles or temporal snapshot. *Why it matters*: existing v1 work uses real data, while temporal
+  work now has an explicit recovery dependency. → `wiki/this-project/data-availability.md`
 - **2019 methodology is a reference point, not a spec to reproduce**: the rework must genuinely modernize
   (heterogeneous + temporal graph learning), not just port bond-graph feature engineering into PyTorch.
   *Why*: graph ML has moved on since 2019; the original's own limitations section (and the fact it names
@@ -160,10 +177,12 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 ## Where things stand right now
 
 Planning/design is done (Phases 0-1 + the design decisions), the data is converted to Parquet (backup
-still open), and graph construction, temporal evaluation, the strong LightGBM baseline, EDA/topology,
+still open), and graph construction, fixed-origin evaluation, the strong LightGBM baseline, EDA/topology,
 and the first GraphSAGE comparison are implemented, tested, and explained in five applied notebooks.
-Phase 3.5 is complete: GraphSAGE did not beat LightGBM. The immediate next work is the
-foundations/architecture progression, beginning with graph representations and message passing. See
+Phase 3.5 is complete: GraphSAGE did not beat LightGBM under the shared retrospective protocol. The
+immediate next work is point-in-time reconstruction: verify event/label timestamps, build strictly-as-of
+histories and rolling-origin evaluation, establish a time-aware LightGBM baseline, then introduce time
+into the GNN. Foundations notebooks continue alongside that implementation. See
 `specs/roadmap.md` for the full phased plan and `BACKLOG.md` for the ordered next tasks.
 
 ## Map of the docs (what to read for what)

@@ -42,3 +42,12 @@ attributes, not hand-derived effort/flow/energy) should be able to learn equival
 signal automatically. Tier 1 features remain useful as a **classical baseline** to compare against (see
 `modelling-and-validation.md`, `results.md`) — the GNN doesn't need to reproduce them, it needs to beat
 them honestly.
+
+## Rework audit qualification (2026-08-02)
+
+“Useful baseline” does not mean the stored columns are safe to reuse. Lifecycle offsets are often
+post-origination, outcome rates require observation-time rather than merely invoice-time ordering, and
+the bond layer directly propagates those rates through topology. Value-level comparison also found
+cross-target duplicate families and unexplained changes between the two `04` artifacts. The rework will
+only use these features if they are regenerated inside rolling folds from strictly prior observable
+events. Full evidence and policy: `wiki/this-project/bond-graph-leakage-audit.md`.

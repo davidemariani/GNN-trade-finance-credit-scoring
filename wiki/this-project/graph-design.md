@@ -77,8 +77,8 @@ owe as a buyer" — the asymmetry the bond-graph effort/flow direction encoded b
   - *Why v1 does not yet include prior outcome rates*: the instrument table holds eventual impairment/
     repayment outcomes, not a proven as-of-T state. Aggregating those final outcomes merely because an
     invoice originated before T could leak resolutions that happened after T. Outcome-history aggregates
-    stay deferred until the temporal snapshot semantics can establish what was actually known at the
-    cutoff. This is more conservative than the earlier illustrative list of company aggregates.
+    stay deferred until a verified event-time source can establish what was actually known at each
+    prediction time. This is more conservative than the earlier illustrative list of company aggregates.
   - *Why not pure learned embeddings (the earlier draft's choice)*: a per-node learned embedding is
     inherently **transductive** — a company absent from training has no trained vector. On this data
     **56% of test-period companies are unseen in training**, and **25.5% of test instruments involve a
@@ -87,23 +87,24 @@ owe as a buyer" — the asymmetry the bond-graph effort/flow direction encoded b
     zero-history feature vector, which is the honest representation of "no track record."
   - *Why time-windowed (pre-T only)*: computing company aggregates over the full dataset would leak future
     outcomes into the company node, the same failure mode described below. Restricting to pre-T instruments
-    keeps the split genuinely inductive.
+    keeps post-T rows out and supports cold-start evaluation. It does not make histories point-in-time for
+    every earlier training row; that limitation is handled below.
 
-## Leakage: two distinct problems, both handled deliberately
+## Leakage: two distinct graph problems, only one fully controlled in v1
 
 1. **Test-set leakage (must eliminate).** A company node aggregating over *all* its instruments — or a
    learned embedding shaped by post-T message passing — lets future information reach the representation
    used to score test instruments. **Fix**: inductive setup — company features are computed from pre-T
    instruments only, and the model is trained on the pre-T subgraph, then evaluated on post-T instrument
    nodes attached to it. No forward/backward pass lets post-T info reach the trained parameters.
-2. **Intra-training temporal leakage (named, accepted for v1).** Within the training subgraph, a company
+2. **Intra-training temporal leakage (known v1 limitation).** Within the training subgraph, a company
    node still aggregates messages from all its *pre-T* instruments, so an early-2018 instrument's
-   representation can be informed by a slightly-later (still pre-T) sibling. This does not inflate the test
-   metric (test is clean post-T), but it means v1's training task is marginally easier than true
-   deployment (where, scoring a new instrument, you'd only have the company's strictly-earlier history).
-   The fully-correct treatment is **temporal message passing** (a node receives messages only from
-   strictly-earlier instruments) — that's part of the deferred temporal phase, not v1. Flagged here so it
-   is a conscious simplification, not an unnoticed bug.
+   representation can be informed by a later (still pre-T) sibling. The same applies to the cutoff-wide
+   company aggregates used by LightGBM. This does not expose post-T test labels, but it can make training
+   easier than deployment and can bias early-stopping choices because validation-period features/topology
+   were already included in preprocessing. The fully-correct treatment is an **event-time graph** in
+   which each prediction receives messages only from strictly earlier events. The separate final-snapshot
+   label-timing problem is documented in `evaluation.md` and must be fixed at the same time.
 
 ## Task framing
 
@@ -128,9 +129,9 @@ On `02_instrumentsdf_2.parquet` at T=2018-04-30 the build produces:
 - 46,102 pre-cutoff and 13,718 post-cutoff instruments;
 - 849 companies with zero pre-cutoff history.
 
-The graph carries a `pre_cutoff_mask` as temporal metadata, but that is deliberately **not yet the final
-training mask**: label maturity and the inductive train/test views belong to the next evaluation-pipeline
-step. The implementation is explained end-to-end in
+The graph carries a `pre_cutoff_mask` as temporal metadata. The evaluation layer turns it into label and
+edge-view masks, but the 2026-08-02 audit established that these are retrospective final-snapshot masks,
+not yet fully as-of-time labels. The implementation is explained end-to-end in
 `notebooks/02_project/00_graph_construction.ipynb` and tested with hand-built in-memory tables in
 `tests/data/test_graph.py`.
 
@@ -157,3 +158,17 @@ Full-batch aggregation is deliberate: the graph fits comfortably in memory, so n
 add variance and infrastructure without answering a scaling problem. Architecture studybook:
 `notebooks/01_architectures/graphsage.ipynb`; implementation:
 `src/graph_ml/models/hetero_graphsage.py`.
+
+## Next graph design: causal time-aware messages
+
+The next applied graph should keep the same company/instrument identity and role-typed relations while
+turning each instrument origination into a timestamped event. At prediction time `t_i`, only events with
+time `< t_i` may update seller/buyer company state. Start with an interpretable snapshot/event GraphSAGE:
+add edge age or a learned time encoding, decay or attend to older neighbors, keep seller and buyer state
+role-specific, and update company memory in chronological order. Recency-based neighbor sampling can
+prevent large hubs from washing out recent evidence. A memory-based temporal GNN is a later candidate,
+after the event stream and label-time contract are verified. See `wiki/gnn-concepts/temporal-graphs.md`.
+
+Useful static ablations remain—root-only neural baseline, removal of pre-aggregated histories, relation
+collapse, degree-aware aggregation, and multiple seeds—but temporal correctness takes priority over
+architecture tuning.

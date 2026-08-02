@@ -17,9 +17,10 @@
 - **Target variables**: `has_impairment1` (imp), `is_pastdue90` (p90), `is_pastdue180` (p180) — all rare/
   imbalanced binary events at the instrument level. See `glossary.md` for precise definitions.
 
-**Status for this rework**: whether the original anonymized dataset is still accessible is an open
-question — see `BACKLOG.md` / `specs/roadmap.md` Phase 1. The public `networkAnalysisForML` GitHub repo
-does not contain the raw 163k-row file; only smaller derived dashboard artifacts (`base_graph.pkl`,
+**Status for this rework (updated 2026-08-02)**: all eight converted Parquet pipeline stages are available
+locally and power v1. The original pickle files and historical temporal snapshot are absent from the
+current workspace, so snapshot recovery is open work. The public `networkAnalysisForML` GitHub repo does
+not contain the raw 163k-row file; only smaller derived dashboard artifacts (`base_graph.pkl`,
 `network_edges.pkl`, `network_nodes.pkl`) were found there.
 
 ## Network construction

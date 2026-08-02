@@ -48,3 +48,13 @@ structure itself) used at training time reflect information only available in th
 given instrument, evaluation will be optimistic in the same way shuffle-mode was here. Any GNN evaluation
 in this project should default to a time-mode or time-sequential split, matching or improving on rigor
 mode (4) above — not the shuffle-mode equivalent. See `specs/roadmap.md` Phase 3.
+
+## Applied rework audit (2026-08-02)
+
+The v1 rework correctly blocks post-cutoff rows and edges, but it does **not yet match mode (4)** inside
+the training period. Endpoint histories and static topology are constructed through the common cutoff for
+every earlier row, preprocessing sees the late validation window, and label maturity uses final-snapshot
+status rather than proven as-of-cutoff event availability. The v1 numbers are therefore retrospective
+benchmarks. Phase 3.6 restores the original project's strongest methodological principle with a
+strictly-as-of event builder and rolling-origin folds before adding temporal message passing. See
+`wiki/this-project/evaluation.md`.

@@ -19,7 +19,8 @@ Planned entries (create as each is actually covered — don't pre-write stubs wi
   evaluation studybook)
 - [Heterogeneous graphs](heterogeneous-graphs.md) (first covered in the applied graph-construction
   studybook)
-- Temporal / dynamic graph learning (relevant given the non-stationary transaction network)
+- [Temporal / dynamic graph learning](temporal-graphs.md) (causal event ordering, snapshots, time-aware
+  messages, memory, and the next applied direction)
 
 **Architectures** (mirrors `notebooks/01_architectures/`)
 - GCN

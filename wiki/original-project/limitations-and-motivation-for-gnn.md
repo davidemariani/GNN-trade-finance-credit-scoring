@@ -61,3 +61,10 @@ for anything more elaborate is good pedagogy. But the model(s) actually **applie
 in `notebooks/02_project/` / `src/graph_ml/models/` should be chosen with the heterogeneous + temporal
 nature of the graph in mind, not just "whichever foundational architecture we learned first." This is a
 design decision to make explicitly once we're at that stage of the roadmap, not something to lock in now.
+
+That decision has now been exercised once: relation-aware GraphSAGE was the appropriate simple v1 model,
+but it underperformed LightGBM and remained static. The 2026-08-02 audit makes temporal reconstruction the
+next applied step—not because time guarantees a higher score, but because the comparison is not fully
+deployment-like until labels, aggregates, preprocessing, and messages all obey event order. The project
+will establish a point-in-time tabular baseline before attributing any change to a temporal GNN. See
+`wiki/this-project/evaluation.md` and `wiki/gnn-concepts/temporal-graphs.md`.
