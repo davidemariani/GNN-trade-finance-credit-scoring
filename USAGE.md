@@ -50,7 +50,8 @@ jupyter lab notebooks/
 
 See `specs/instructions/notebook-standards.md` before adding a new notebook.
 
-The executed vertical-slice notebooks are ordered `00` through `04`. The architecture derivation lives
+The executed vertical-slice notebooks are ordered `00` through `04`; notebook `05` begins the
+point-in-time remediation with label clocks, causal histories, and the bond audit. The architecture derivation lives
 in `notebooks/01_architectures/graphsage.ipynb`; the real-data comparison is
 `notebooks/02_project/04_hetero_graphsage.ipynb`. Both require Graphviz only when re-rendering the traced
 computational graph; their committed outputs remain visible without rerunning.
@@ -60,6 +61,10 @@ The current `data/` workspace has the eight Parquet pipeline stages, but not the
 should be read as retrospective benchmarks. Do not start a temporal-model run until event/label timestamp
 semantics have been audited; see `wiki/this-project/evaluation.md` and
 `wiki/this-project/data-availability.md`.
+
+The point-in-time utilities currently support verified event/resolution dates and conservative
+due-date-plus-horizon targets. The first complete causal rerun uses p90; p180 has no mature positives in
+the current test window, and impairment remains blocked on event-time provenance.
 
 ## Git / GitHub
 

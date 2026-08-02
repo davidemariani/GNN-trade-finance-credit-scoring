@@ -60,4 +60,5 @@ confirmed post-cutoff message isolation, but also found that final-snapshot labe
 training histories are not fully point-in-time. These scores are therefore retrospective benchmarks; the
 next milestone is an as-of event/label pipeline, time-aware LightGBM baseline, and temporal GNN. See
 `specs/roadmap.md` (its "plan at a glance" table) for the phased plan and current progress, and
-`STUDYBOOK.md` for a fast orientation + decision log.
+`STUDYBOOK.md` for a fast orientation + decision log. The first causal-time lesson and bond-artifact audit
+are executable and visual in `notebooks/02_project/05_point_in_time_and_bond_audit.ipynb`.

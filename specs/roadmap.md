@@ -155,7 +155,9 @@ the test budget on more architecture tuning.
 - [ ] Implement strictly-as-of company histories and label-availability masks. Every row sees events
       `< t_i`; cumulative aggregates are shifted; preprocessing is fitted inside each training fold.
       Generic strictly-prior history construction plus a lifecycle/outcome/bond schema guard are now
-      implemented and tested in `src/graph_ml/data/temporal.py`; graph/baseline integration remains.
+      implemented and tested in `src/graph_ml/data/temporal.py`. Explicit event/horizon label availability
+      and rolling masks are implemented in `src/graph_ml/evaluation/point_in_time.py`; fold-fitted
+      preprocessing and graph/baseline integration remain.
 - [ ] Add adversarial leakage tests: modifying future labels/features/topology must not change earlier
       features, labels, selected hyperparameters, embeddings, or scores.
 - [ ] Use rolling-origin validation/test windows and report prevalence, seen/cold-start status, and multiple
@@ -163,6 +165,8 @@ the test budget on more architecture tuning.
       formulation rather than inventing event times.
 - [ ] Re-run LightGBM first on the point-in-time feature stream, then compare a role-aware temporal
       GraphSAGE using event age/recency and causal company-state updates. Report multiple neural seeds.
+      Use p90 for the first complete pass: impairment timing is unresolved and the mature p180 test cohort
+      has zero positives at the current dates.
 - [ ] Create a visual studybook showing an event timeline, legal/illegal messages, rolling folds, company
       memory updates, and the temporal-vs-tabular comparison.
 

@@ -129,6 +129,28 @@ inside temporal folds. See `bond-graph-leakage-audit.md`.
 5. Rebuild a time-aware LightGBM baseline and a temporal GNN from the same as-of feature/event stream.
    Only then does their comparison isolate the value of temporal message passing.
 
+### First implementation and viable target (2026-08-02)
+
+`src/graph_ml/evaluation/point_in_time.py` now represents label availability explicitly and builds
+rolling-origin masks that require a label to be knowable at the relevant boundary. It supports:
+
+- event targets: positives become available at a verified event timestamp, negatives at a verified
+  resolution timestamp; missing timestamps remain unsupervised;
+- horizon targets: both classes become conservatively available at `due_date + horizon`.
+
+On the current fixed T/A dates, the horizon rule gives:
+
+| Target | Known-by-T train | Positives | Known-by-A test | Positives |
+|---|---:|---:|---:|---:|
+| p90 | 38,169 | 3,050 | 10,554 | 222 |
+| p180 | 29,552 | 2,169 | 2,504 | 0 |
+
+p180 is not evaluable at this cutoff because the mature test cohort has no positives. Impairment remains
+the main business target but needs a verified event timestamp. **p90 is therefore the practical next
+implementation target** for exercising the complete causal tabular/GNN pipeline without inventing
+impairment timing. This is a protocol decision, not permission to select a target based on which test
+score looks best.
+
 ## Cold-start companies
 
 ~56% of test-period companies are unseen in training; before maturity filtering ~25.5% of test instruments

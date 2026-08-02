@@ -48,6 +48,13 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 
 ## Decision log (most recent first — one line + why, link for detail)
 
+- **p90 selected for the first complete causal pipeline (2026-08-02)**: explicit label-availability and
+  rolling-origin code now supports event/resolution timestamps or due-date horizons. At current T/A, p90
+  has 38,169 known-by-T train rows (3,050 positives) and 10,554 known-by-A test rows (222 positives);
+  p180's 2,504-row test cohort has zero positives, and impairment event time remains unverified. *Why*:
+  p90 lets temporal engineering continue without fabricating impairment timestamps or evaluating an
+  all-negative cohort. → `wiki/this-project/evaluation.md`,
+  `src/graph_ml/evaluation/point_in_time.py`
 - **Original bond features are quarantined pending causal regeneration (2026-08-02)**: Tier-1 outcome
   histories are shifted by invoice order but do not prove the earlier outcomes were observable; Tier-2
   flows propagate those rates and can also see future topology. The stored artifacts additionally contain
@@ -181,8 +188,10 @@ still open), and graph construction, fixed-origin evaluation, the strong LightGB
 and the first GraphSAGE comparison are implemented, tested, and explained in five applied notebooks.
 Phase 3.5 is complete: GraphSAGE did not beat LightGBM under the shared retrospective protocol. The
 immediate next work is point-in-time reconstruction: verify event/label timestamps, build strictly-as-of
-histories and rolling-origin evaluation, establish a time-aware LightGBM baseline, then introduce time
-into the GNN. Foundations notebooks continue alongside that implementation. See
+histories and rolling-origin evaluation, establish a p90 time-aware LightGBM baseline, then introduce time
+into the GNN. Impairment timestamp recovery remains open in parallel. The visual explanation and real-data
+cohort/bond diagnostics are in `notebooks/02_project/05_point_in_time_and_bond_audit.ipynb`. Foundations
+notebooks continue alongside that implementation. See
 `specs/roadmap.md` for the full phased plan and `BACKLOG.md` for the ordered next tasks.
 
 ## Map of the docs (what to read for what)

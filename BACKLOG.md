@@ -50,11 +50,12 @@ against the held-out test set.
        `wiki/this-project/data-availability.md`.
 9. [ ] **Build a point-in-time data contract** — strictly-earlier (`< t_i`) cumulative endpoint histories,
        shifted so a row cannot include itself; label-availability masks; preprocessing fitted per rolling
-       training window; adversarial leakage tests. The generic strictly-prior history primitive and schema
-       guard are implemented; graph/baseline integration remains. → `wiki/this-project/evaluation.md`,
-       `wiki/this-project/bond-graph-leakage-audit.md`.
-10. [ ] **Rebenchmark tabular first** — rolling-origin LightGBM on the new as-of features. This separates
-        the effect of fixing time from the effect of graph message passing.
+       training window; adversarial leakage tests. Strictly-prior histories, schema guard, event/horizon
+       label availability, and rolling masks are implemented; fold-fitted preprocessing integration
+       remains. → `wiki/this-project/evaluation.md`, `wiki/this-project/bond-graph-leakage-audit.md`.
+10. [ ] **Rebenchmark tabular first on p90** — p90 has a defensible due-date-plus-90-day availability rule
+        and viable current cohorts; p180 has zero mature test positives, while impairment event time is
+        unresolved. This separates corrected time handling from graph message passing.
 11. [ ] **Implement temporal GraphSAGE** — timestamped role edges, explicit age/recency weighting, causal
         company-state updates, hub-aware recent-neighbor selection, and multiple seeds; document it as a
         visual studybook. → `wiki/gnn-concepts/temporal-graphs.md`.
