@@ -134,6 +134,50 @@ the harder operational problem. LightGBM gain importance is dominated by endpoin
 buyer-history amount/timing summaries; this supports the value of company context but does not establish
 that message passing improves on fixed aggregates.
 
+## First GNN result (2026-08-02)
+
+The first applied model is a two-layer, relation-aware GraphSAGE with 64 hidden channels, mean
+aggregation, layer normalization, ReLU, 0.2 dropout, and class-weighted binary cross-entropy. Epoch count
+is selected on the same late pre-cutoff validation block used by the baseline protocol: validation
+PR-AUC peaks at 0.261 at epoch 139, then a fresh seed-42 CPU model is refitted on all mature training
+labels for 139 epochs. CPU plus deterministic PyTorch algorithms is used for the reported run.
+
+| Model | Cohort | PR-AUC | ROC AUC | Precision@top 5% | Recall@top 5% |
+|---|---|---:|---:|---:|---:|
+| **GraphSAGE** | **all** | **0.305** | **0.818** | **42.37%** | **37.74%** |
+| GraphSAGE | seen | 0.291 | 0.790 | 28.17% | 34.25% |
+| GraphSAGE | cold-start | 0.319 | 0.884 | 21.62% | 10.43% |
+| LightGBM | all | 0.465 | 0.913 | 49.03% | 43.68% |
+| LightGBM | seen | 0.432 | 0.900 | 34.65% | 42.12% |
+| LightGBM | cold-start | 0.387 | 0.904 | 28.83% | 13.91% |
+
+**Conclusion:** GraphSAGE learns substantial signal and beats the instrument-only logistic reference,
+but it does not beat LightGBM in any cohort. The overall PR-AUC gap is 0.160. Likely explanations are the
+tree model's strength on structured nonlinear interactions, redundancy between two-hop aggregation and
+the company histories already present in node features, dilution at very high-degree companies, and the
+v1 model's intentionally limited receptive field. These are hypotheses for validation-only experiments,
+not reasons to retune against the reported test period.
+
+### Frozen-configuration seed robustness
+
+Four additional deterministic CPU runs use exactly the same configuration with seeds 7, 19, 73, and
+101. Across all five seeds:
+
+| Cohort | Mean PR-AUC | Sample SD | Minimum | Maximum |
+|---|---:|---:|---:|---:|
+| all | 0.244 | 0.079 | 0.115 | 0.305 |
+| seen | 0.276 | 0.085 | 0.127 | 0.337 |
+| cold-start | 0.202 | 0.087 | 0.083 | 0.319 |
+
+Seed 42 is the maximum overall and on cold-start, not a typical run. No configuration was changed after
+examining these results. The variance strengthens the conclusion: v1 GraphSAGE is not competitive or
+stable enough to replace LightGBM, and future neural experiments must report multiple seeds by default.
+
+Implementation: `src/graph_ml/models/hetero_graphsage.py` and
+`src/graph_ml/training/graphsage.py`; derivation: `notebooks/01_architectures/graphsage.ipynb`; applied
+studybook: `notebooks/02_project/04_hetero_graphsage.ipynb`; five-seed run log:
+`results/gnn_metrics.csv`.
+
 ## Results logging & reproducibility
 
 - **Results log**: a committed `results/` table (markdown or CSV) — one row per run/cohort: date, model, target,

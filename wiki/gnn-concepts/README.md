@@ -23,7 +23,8 @@ Planned entries (create as each is actually covered — don't pre-write stubs wi
 
 **Architectures** (mirrors `notebooks/01_architectures/`)
 - GCN
-- GraphSAGE
+- [GraphSAGE](graphsage.md) (mean aggregation, inductive representations, and this project's
+  relation-aware extension)
 - GAT
 - GIN
 - (heterogeneous and/or temporal GNN architecture(s), once Phase 4's applied-model decision is made)

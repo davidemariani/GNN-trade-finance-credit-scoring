@@ -81,6 +81,9 @@ The applied notebooks now use a consistent set of tested teaching figures from `
   ranking;
 - notebook 03 covers imbalance, time variation, heavy-tailed degrees, components, hybrid footprint, and
   local topology.
+- notebook 04 shows validation-only model selection, cohort-level baseline comparison, class-conditional
+  score overlap, seed variability against the fixed LightGBM bar, and an anonymous PCA projection of
+  learned instrument embeddings.
 
 Every graph legend maps color to node or relation semantics. Real-data network figures expose anonymous
 topology only: generic `C*`/`I*` labels replace business identifiers, and bounded ego views replace an

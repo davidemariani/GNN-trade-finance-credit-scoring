@@ -12,10 +12,10 @@ here. If this file starts to mirror the roadmap, prune it back.
 
 _(nothing actively in progress — next action is the top of "Next up")_
 
-## Next up — the data pipeline toward the v1 vertical slice (roadmap Phase 3 → 3.5)
+## Next up — foundations and architecture evidence (roadmap Phases 2 and 4)
 
-Ordered; each builds on the last. Design is already decided — see `wiki/this-project/graph-design.md`
-and `evaluation.md`; these are just the build steps.
+The first vertical slice is complete. These are the next evidence-building steps, not permission to tune
+against the held-out test set.
 
 1. [x] **Convert `data/` to Parquet (zstd)** — done via `src/graph_ml/data/convert.py`, verified with an
        exact value-level round-trip check. [ ] **Still open: back it up off-GitHub** (the data is currently
@@ -36,14 +36,21 @@ and `evaluation.md`; these are just the build steps.
 5. [x] **EDA + topology viz** (`src/graph_ml/viz/`) — imbalance, temporal volume, degree distributions,
        connected components, hybrid footprint, and anonymous static/interactive ego networks.
        → `wiki/this-project/visualization.md`, `notebooks/02_project/03_eda_and_topology.ipynb`.
-6. [ ] **Vertical slice** — add one GNN (GCN or GraphSAGE), compare honestly to LightGBM on PR-AUC, write
-       the short conclusion + results visuals. This closes roadmap Phase 3.5.
+6. [x] **Vertical slice** — relation-aware GraphSAGE reaches 0.305 overall PR-AUC versus LightGBM's
+       0.465; the honest conclusion and visual diagnostics are in
+       `notebooks/02_project/04_hetero_graphsage.ipynb`. Phase 3.5 is closed.
+7. [x] **Robustness pass** — five fixed-configuration CPU seeds give overall PR-AUC 0.244 ± 0.079
+       (range 0.115–0.305). No hyperparameter changed; seed 42 is the maximum, not the typical run.
+       → `results/gnn_metrics.csv`, `notebooks/02_project/04_hetero_graphsage.ipynb`.
+8. [ ] **Backfill foundations** — graph representations/message passing first, tied to the concrete v1
+       model rather than written as detached theory.
+9. [ ] **Continue architecture progression** — GCN as the historical foundation, then GAT/GIN; use
+       validation-only choices and retain LightGBM as the test benchmark.
 
 ## Parked (revisit when the relevant phase starts)
 
 - `04_network_snapshots.pkl` snapshot semantics — for the temporal phase, not v1.
-- Foundations notebooks (Phase 2) — backfilled around the slice, written when each concept first bites.
-- Architecture progression GCN→GraphSAGE→GAT→GIN + applied-model choice (Phase 4).
+- Longer hybrid-mediated contagion and temporal message passing; the two-layer v1 does not test these.
 - Interactive Hugo showcase / D3 hero pieces (Phase 6).
 
 > Completed work is recorded as checked-off items in `specs/roadmap.md` and as dated entries in

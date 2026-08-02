@@ -48,6 +48,13 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 
 ## Decision log (most recent first — one line + why, link for detail)
 
+- **First GNN vertical slice completed (2026-08-02)**: deterministic relation-aware GraphSAGE reaches
+  PR-AUC 0.305 overall / 0.291 seen / 0.319 cold-start at seed 42, below LightGBM's
+  0.465 / 0.432 / 0.387; five frozen seeds average only 0.244 ± 0.079 overall. *Why*: GraphSAGE matches
+  the inductive typed graph, but two-hop mean aggregation is both weaker than a strong tree over
+  cutoff-safe endpoint histories and initialization-sensitive; the negative result narrows the next
+  questions without weakening the test contract. → `wiki/this-project/evaluation.md`,
+  `notebooks/02_project/04_hetero_graphsage.ipynb`, `results/gnn_metrics.csv`
 - **Applied notebooks adopt a visual teaching language (2026-08-01)**: tested schema, real anonymous ego,
   receptive-field, cohort, ranking-curve, baseline, and importance figures now accompany the prose.
   *Why*: each studybook should make abstract graph and evaluation objects inspectable without exposing
@@ -153,9 +160,10 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 ## Where things stand right now
 
 Planning/design is done (Phases 0-1 + the design decisions), the data is converted to Parquet (backup
-still open), and graph construction, temporal evaluation, the strong LightGBM baseline, and EDA/topology
-are implemented, tested, and explained in four applied notebooks. The immediate next action is the **first
-GNN and Phase 3.5 vertical slice**, compared against the 0.465 PR-AUC LightGBM bar. See
+still open), and graph construction, temporal evaluation, the strong LightGBM baseline, EDA/topology,
+and the first GraphSAGE comparison are implemented, tested, and explained in five applied notebooks.
+Phase 3.5 is complete: GraphSAGE did not beat LightGBM. The immediate next work is the
+foundations/architecture progression, beginning with graph representations and message passing. See
 `specs/roadmap.md` for the full phased plan and `BACKLOG.md` for the ordered next tasks.
 
 ## Map of the docs (what to read for what)

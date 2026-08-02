@@ -50,6 +50,11 @@ jupyter lab notebooks/
 
 See `specs/instructions/notebook-standards.md` before adding a new notebook.
 
+The executed vertical-slice notebooks are ordered `00` through `04`. The architecture derivation lives
+in `notebooks/01_architectures/graphsage.ipynb`; the real-data comparison is
+`notebooks/02_project/04_hetero_graphsage.ipynb`. Both require Graphviz only when re-rendering the traced
+computational graph; their committed outputs remain visible without rerunning.
+
 ## Git / GitHub
 
 This repo is isolated from the rest of the machine — local git identity is the personal

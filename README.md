@@ -51,7 +51,10 @@ jupyter lab notebooks/
 
 ## Status
 
-Planning/design, graph construction, temporal evaluation, and the strong LightGBM baseline are complete;
-EDA/topology visualization is also complete, and the first GNN vertical slice is next. See
+Planning/design, graph construction, temporal evaluation, EDA/topology, and the first complete model
+comparison are implemented. Relation-aware GraphSAGE reaches 0.305 PR-AUC at seed 42 but only
+0.244 ± 0.079 across five frozen-configuration seeds, below the strong LightGBM baseline's 0.465. The
+result, including seen/cold-start breakdowns and visual diagnostics, is recorded honestly rather than
+tuned against test labels. See
 `specs/roadmap.md` (its "plan at a glance" table) for the phased plan and current progress, and
 `STUDYBOOK.md` for a fast orientation + decision log.

@@ -10,20 +10,19 @@ only the currently-active, finer-grained tasks and points here for the full pict
 | 0 | Environment & isolation setup (repo, uv env, docs, wiki) | ✅ done |
 | 1 | Study the original 2019 project (deep-read → `wiki/original-project/`) | ✅ done |
 | — | Design & methodology decisions (graph, evaluation, visualization, data storage) | ✅ done |
-| 3 | Data pipeline + **strong (LightGBM) baseline** | ⬜ **next** |
-| 3.5 | **v1 vertical slice** — data → baseline → one GNN → honest comparison (the priority) | ⬜ |
+| 3 | Data pipeline + **strong (LightGBM) baseline** | ✅ done |
+| 3.5 | **v1 vertical slice** — data → baseline → one GNN → honest comparison (the priority) | ✅ done |
 | 2 | GNN foundations notebooks (backfilled *around* the slice) | ⬜ ongoing |
 | 4 | GNN architectures (GCN→GraphSAGE→GAT→GIN) + applied model choice | ⬜ |
 | 5 | Portfolio quality gate | ⬜ |
 | 6 | Interactive Hugo showcase dashboard (D3 for hero pieces) | ⬜ deferred |
 
-**Execution order (not strictly by phase number).** Phases 0-1 and all the design decisions are done. The
-next concrete work is Phase 3 (data pipeline + baseline) leading straight into the **Phase 3.5 vertical
-slice**, which is the priority: one complete, honest, end-to-end story is worth more — for both learning
-and showcase — than many half-finished notebooks. Phase 2 (foundations) and Phase 4 (architectures) are
-then **backfilled around** that slice, not completed before it; a foundations notebook can be written when
-its concept first becomes relevant to the applied work. Visualization is cross-cutting (see the note in
-Phase 3). Phase 6 is explicitly deferred and blocks nothing.
+**Execution order (not strictly by phase number).** Phases 0-1, the design decisions, Phase 3, and the
+Phase 3.5 vertical slice are done. The slice establishes the first honest result: relation-aware
+GraphSAGE reaches 0.305 PR-AUC at seed 42 and 0.244 ± 0.079 across five seeds, but does not beat
+LightGBM's 0.465. Phase 2 (foundations) and Phase 4
+(architectures) can now be backfilled around that concrete evidence, followed by the portfolio quality
+gate. Visualization remains cross-cutting. Phase 6 is explicitly deferred and blocks nothing.
 
 Check items off as they're completed — the checkboxes below are the current status, not chat history.
 
@@ -128,12 +127,16 @@ gating sweep before any applied work.
 milestone. A reviewer values this far more than many half-finished notebooks. Do this as a thin slice,
 then backfill foundations (Phase 2) and architectures (Phase 4) around it.
 
-- [ ] data → strong baseline → one GNN (GCN or GraphSAGE on the company+instrument graph) → honest
+- [x] data → strong baseline → one GNN (relation-aware GraphSAGE on the company+instrument graph) → honest
       comparison on PR-AUC with the maturity rule and cold-start breakdown → short written conclusion
       (including "the GNN did/didn't beat LightGBM, and here's the likely why"). Run against the real data
       locally (not reproducible from a bare public clone — see `wiki/this-project/data-availability.md`
       "Runnability trade-off"). Include the topology + results visuals so the slice is legible as a
       showcase — via committed notebook outputs, not by re-running — not just a metrics table.
+      GraphSAGE PR-AUC: 0.305 overall / 0.291 seen / 0.319 cold-start, below LightGBM's
+      0.465 / 0.432 / 0.387. Conclusion and visuals: `notebooks/02_project/04_hetero_graphsage.ipynb`;
+      run log: `results/gnn_metrics.csv`. A frozen five-seed robustness pass finds overall
+      0.244 ± 0.079 (range 0.115–0.305), so seed 42 is explicitly not presented as typical. ✓
 
 ---
 
@@ -148,23 +151,26 @@ buyer/seller roles — and temporal/non-stationary, which a plain homogeneous, s
 doesn't capture).
 
 - [ ] GCN (Kipf & Welling) — first spatial convolution, simplest baseline GNN.
-- [ ] GraphSAGE — inductive setting, neighbor sampling.
+- [x] GraphSAGE — inductive mean aggregation; relation-aware full-batch extension chosen for this
+      graph's size and cold-start setting. `notebooks/01_architectures/graphsage.ipynb`. ✓
 - [ ] GAT — attention-based neighbor weighting.
 - [ ] GIN — expressiveness ceiling (Weisfeiler-Lehman test), why it matters.
 - [ ] Each architecture notebook includes its **message-passing diagram (Mermaid)** and the **actual model
       computational graph (torchview)** — the visual half of the "explain before implement" rule
       (`wiki/this-project/visualization.md`).
-- [ ] Explicit design decision: choose the architecture family for the applied model, informed by the
+- [x] Explicit design decision: choose the architecture family for the applied model, informed by the
       foundational progression above but decided on fit to this graph's heterogeneous + temporal nature
       (e.g. relation-aware/heterogeneous message passing, and/or a temporal graph learning approach) —
       not defaulted to whichever foundational architecture came last. Document the decision and rationale
-      in `wiki/gnn-concepts/` before implementing it.
+      in `wiki/gnn-concepts/` before implementing it. Relation-aware GraphSAGE selected for the v1
+      inductive slice; see `wiki/gnn-concepts/graphsage.md`. ✓
 - [ ] **Test the contagion hypothesis explicitly**: only once past the 2-hop same-company aggregation of
       v1 (which overlaps the original's hand-features) does the graph genuinely exercise buyer→hybrid→buyer
       contagion paths. Deeper/temporal models are where the "networked signal" claim actually gets tested —
       see `wiki/this-project/graph-design.md` "Known simplification".
-- [ ] Apply the chosen candidate(s) to the project's prediction task; compare honestly against the
+- [x] Apply the first chosen candidate to the project's prediction task; compare honestly against the
       Phase 3 strong (LightGBM) baseline on PR-AUC and record what did/didn't help and why.
+      GraphSAGE does not win; the likely limitations are documented without test-driven retuning. ✓
 
 ---
 

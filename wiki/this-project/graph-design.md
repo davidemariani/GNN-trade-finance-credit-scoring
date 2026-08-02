@@ -144,6 +144,16 @@ same-company aggregation, learned rather than hand-built, help?" — but it is *
 network-contagion hypothesis. That is an explicit later step (deeper/temporal models), and pretending v1
 covers it would be overclaiming.
 
-## Open items (decide when reached)
+## First model-level decisions (2026-08-02)
 
-- Self-loops / normalization details — model-level, decide with the first GNN architecture.
+The v1 model is two-layer relation-aware GraphSAGE. Each typed relation owns a mean-aggregator
+transformation; relation outputs are summed at their destination, followed by node-wise layer
+normalization, ReLU, and dropout. PyG's `SAGEConv` root transformation preserves a node's own state, so
+no synthetic homogeneous self-loop relation is added. The second layer computes only instrument
+destinations because company outputs from that layer would not affect the instrument classifier and
+would create dead parameters.
+
+Full-batch aggregation is deliberate: the graph fits comfortably in memory, so neighbour sampling would
+add variance and infrastructure without answering a scaling problem. Architecture studybook:
+`notebooks/01_architectures/graphsage.ipynb`; implementation:
+`src/graph_ml/models/hetero_graphsage.py`.
