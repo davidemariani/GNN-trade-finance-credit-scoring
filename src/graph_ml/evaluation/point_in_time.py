@@ -27,6 +27,12 @@ class LabelAvailability:
         timestamp = _normalize_timestamp(as_of, "as_of")
         return self.valid_mask & self.available_at.le(timestamp).to_numpy()
 
+    def known_before(self, boundary: str | pd.Timestamp) -> np.ndarray:
+        """Return labels observable before an end-exclusive fold boundary."""
+
+        timestamp = _normalize_timestamp(boundary, "boundary")
+        return self.valid_mask & self.available_at.lt(timestamp).to_numpy()
+
 
 @dataclass(frozen=True)
 class RollingOriginFoldSpec:
@@ -154,10 +160,10 @@ def build_point_in_time_fold(
     before_validation = times.lt(validation_end).to_numpy()
     test_origin = times.ge(validation_end).to_numpy() & times.lt(test_end).to_numpy()
 
-    train = before_train & availability.known_by(train_end)
-    validation = validation_origin & availability.known_by(validation_end)
-    refit = before_validation & availability.known_by(validation_end)
-    test = test_origin & availability.known_by(test_end)
+    train = before_train & availability.known_before(train_end)
+    validation = validation_origin & availability.known_before(validation_end)
+    refit = before_validation & availability.known_before(validation_end)
+    test = test_origin & availability.known_before(test_end)
     return PointInTimeFold(
         train_end=train_end,
         validation_end=validation_end,

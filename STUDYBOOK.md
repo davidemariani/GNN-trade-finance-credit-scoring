@@ -45,12 +45,32 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
   seen PR-AUC 0.432, cold-start 0.387. At a 5% review budget overall precision is 49.03% and recall 43.68%.
 - Filtered graph topology (`wiki/this-project/visualization.md`): 45 components; largest contains 81.55%
   of nodes; median company degree 5 vs. maximum 5,636; 15 hybrids touch 20.84% of modelling instruments.
+- Causal p90 comparison (`wiki/this-project/evaluation.md`): LightGBM PR-AUC 0.079 overall / 0.102 seen /
+  0.026 cold-start; temporal role GNN five-seed mean 0.053 ± 0.033 / 0.065 ± 0.044 / 0.023 ± 0.003.
 
 ## Decision log (most recent first — one line + why, link for detail)
 
+- **Root-only temporal control isolates graph value and cold-start harm (2026-08-02)**: removing relation
+  messages lowers five-seed mean PR-AUC from 0.053 to 0.035 overall and 0.065 to 0.038 seen, but improves
+  cold-start from 0.023 to 0.033 with much lower variance. *Why*: causal graph history carries signal when
+  available, while the current sparse-history gates need a better fallback before adding depth. →
+  `wiki/this-project/evaluation.md`, `results/root_only_p90_metrics.csv`, notebook 06
+- **First causal temporal GNN slice completed (2026-08-02)**: four role-aware, exponentially decayed
+  strictly-prior channels produce mean p90 PR-AUC 0.053 ± 0.033 overall across five fixed seeds versus
+  LightGBM's 0.079; one seed exceeds the tree, but the distribution is unstable and cold-start remains at
+  prevalence. *Why*: time-aware message passing is now tested under the same legal information set, and
+  the result points to validation-only component ablations and cold-start inputs rather than test-driven
+  tuning. → `wiki/gnn-concepts/temporal-role-gnn.md`, `wiki/this-project/evaluation.md`, notebook 06
+
+- **First causal p90 LightGBM benchmark completed (2026-08-02)**: strictly-prior role-aware endpoint
+  histories and fold-fitted preprocessing produce PR-AUC 0.079 overall / 0.102 seen / 0.026 cold-start;
+  overall ROC AUC is 0.819, illustrating again why ROC alone flatters rare-event performance. *Why*: this
+  is the first defensible bar for a temporal GNN; cold-start companies receive almost no useful ranking
+  signal and become the main design challenge. It is not numerically comparable with the old impairment
+  result. → `wiki/this-project/evaluation.md`, `results/point_in_time_p90_metrics.csv`, notebook 05
 - **p90 selected for the first complete causal pipeline (2026-08-02)**: explicit label-availability and
   rolling-origin code now supports event/resolution timestamps or due-date horizons. At current T/A, p90
-  has 38,169 known-by-T train rows (3,050 positives) and 10,554 known-by-A test rows (222 positives);
+  has 38,083 known-before-T train rows (3,041 positives) and 10,554 known-through-A test rows (222 positives);
   p180's 2,504-row test cohort has zero positives, and impairment event time remains unverified. *Why*:
   p90 lets temporal engineering continue without fabricating impairment timestamps or evaluating an
   all-negative cohort. → `wiki/this-project/evaluation.md`,
@@ -68,8 +88,8 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
   rows see later pre-T attributes/topology. The 0.465 LightGBM and 0.305 seed-42 GraphSAGE PR-AUC scores
   remain comparable retrospective benchmarks, not certified prospective estimates. *Why*: time must be
   represented in features, labels, preprocessing, validation, and graph messages—not just the train/test
-  mask. Next: recover/verify event-time data, build strictly-as-of histories and a rolling-origin tabular
-  baseline, then temporal GraphSAGE. → `wiki/this-project/evaluation.md`,
+  mask. This motivated the now-completed strictly-as-of p90 histories, rolling baseline, and temporal role
+  GNN; verified impairment event time remains open. → `wiki/this-project/evaluation.md`,
   `wiki/gnn-concepts/temporal-graphs.md`
 - **First GNN vertical slice completed (2026-08-02)**: deterministic relation-aware GraphSAGE reaches
   PR-AUC 0.305 overall / 0.291 seen / 0.319 cold-start at seed 42, below LightGBM's
@@ -184,14 +204,13 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 ## Where things stand right now
 
 Planning/design is done (Phases 0-1 + the design decisions), the data is converted to Parquet (backup
-still open), and graph construction, fixed-origin evaluation, the strong LightGBM baseline, EDA/topology,
-and the first GraphSAGE comparison are implemented, tested, and explained in five applied notebooks.
-Phase 3.5 is complete: GraphSAGE did not beat LightGBM under the shared retrospective protocol. The
-immediate next work is point-in-time reconstruction: verify event/label timestamps, build strictly-as-of
-histories and rolling-origin evaluation, establish a p90 time-aware LightGBM baseline, then introduce time
-into the GNN. Impairment timestamp recovery remains open in parallel. The visual explanation and real-data
-cohort/bond diagnostics are in `notebooks/02_project/05_point_in_time_and_bond_audit.ipynb`. Foundations
-notebooks continue alongside that implementation. See
+still open), and graph construction, fixed-origin evaluation, EDA/topology, and both retrospective and
+causal model comparisons are implemented, tested, and explained in seven applied notebooks. Phase 3.5 is
+complete, and the first Phase 3.6 causal p90 slice now compares fold-safe LightGBM with a four-channel
+temporal role GNN. The GNN does not win robustly and cold-start remains unresolved. Next are
+validation-only temporal component ablations, multiple rolling test windows, and foundations notebooks;
+impairment timestamp recovery remains open in parallel. The causal audit is in notebook 05 and the visual
+temporal-model derivation/result is in notebook 06. See
 `specs/roadmap.md` for the full phased plan and `BACKLOG.md` for the ordered next tasks.
 
 ## Map of the docs (what to read for what)

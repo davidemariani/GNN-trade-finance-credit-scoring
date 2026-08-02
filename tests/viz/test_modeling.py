@@ -10,6 +10,8 @@ from graph_ml.viz import (
     plot_embedding_projection,
     plot_score_distributions,
     plot_seed_variability,
+    plot_temporal_decay_curve,
+    plot_temporal_message_schematic,
     plot_training_history,
     seed_metric_summary,
 )
@@ -68,3 +70,21 @@ def test_seed_variability_summary_and_figure():
     )
     assert figure.axes[0].get_title().startswith("GraphSAGE varies")
     plt.close(figure)
+
+
+def test_temporal_teaching_figures_explain_decay_and_relations():
+    decay = plot_temporal_decay_curve(half_life_days=10)
+    schematic = plot_temporal_message_schematic()
+
+    line = decay.axes[0].lines[0]
+    midpoint = np.flatnonzero(np.isclose(line.get_xdata(), 10)).item()
+    assert line.get_ydata()[midpoint] == pytest.approx(0.5)
+    assert schematic.axes[0].get_title().startswith("One temporal")
+    assert len(schematic.axes[0].collections) == 5
+    plt.close(decay)
+    plt.close(schematic)
+
+
+def test_temporal_decay_rejects_nonpositive_half_life():
+    with pytest.raises(ValueError, match="positive"):
+        plot_temporal_decay_curve(half_life_days=0)

@@ -12,7 +12,7 @@ only the currently-active, finer-grained tasks and points here for the full pict
 | — | Design & methodology decisions (graph, evaluation, visualization, data storage) | ✅ done |
 | 3 | Data pipeline + **strong (LightGBM) baseline** | ✅ done |
 | 3.5 | **v1 vertical slice** — data → baseline → one GNN → honest comparison (the priority) | ✅ done |
-| 3.6 | **Point-in-time remediation** — causal labels/features → tabular baseline → temporal GNN | ⬜ next |
+| 3.6 | **Point-in-time remediation** — causal labels/features → tabular baseline → temporal GNN | 🟨 ongoing |
 | 2 | GNN foundations notebooks (backfilled *around* the slice) | ⬜ ongoing |
 | 4 | GNN architectures (GCN→GraphSAGE→GAT→GIN) + applied model choice | ⬜ |
 | 5 | Portfolio quality gate | ⬜ |
@@ -152,26 +152,35 @@ the test budget on more architecture tuning.
 - [ ] Recover/audit event-time sources and define prediction time, target horizon, event timestamp, closure,
       censoring, and simultaneous-event semantics. Do not treat `debt_collection_date` as impairment time
       without evidence.
-- [ ] Implement strictly-as-of company histories and label-availability masks. Every row sees events
+- [x] Implement strictly-as-of tabular company histories and label-availability masks. Every row sees events
       `< t_i`; cumulative aggregates are shifted; preprocessing is fitted inside each training fold.
       Generic strictly-prior history construction plus a lifecycle/outcome/bond schema guard are now
       implemented and tested in `src/graph_ml/data/temporal.py`. Explicit event/horizon label availability
-      and rolling masks are implemented in `src/graph_ml/evaluation/point_in_time.py`; fold-fitted
-      preprocessing and graph/baseline integration remain.
-- [ ] Add adversarial leakage tests: modifying future labels/features/topology must not change earlier
-      features, labels, selected hyperparameters, embeddings, or scores.
+      and rolling masks are implemented in `src/graph_ml/evaluation/point_in_time.py`; temporal-graph
+      integration remains. The tabular contract, including fold-fitted preprocessing, is complete. ✓
+- [x] Add adversarial leakage tests: modifying future labels/features/topology must not change earlier
+      features, labels, selected hyperparameters, embeddings, or scores. The current point-in-time feature,
+      context, and model tests cover strict ordering, simultaneous events, future-row isolation, and target
+      exclusion; extend them with each new temporal component. ✓
 - [ ] Use rolling-origin validation/test windows and report prevalence, seen/cold-start status, and multiple
       time folds. If impairment timing cannot be established, use an explicit p90/p180 horizon or survival
       formulation rather than inventing event times.
-- [ ] Re-run LightGBM first on the point-in-time feature stream, then compare a role-aware temporal
+- [x] Re-run LightGBM first on the point-in-time feature stream: p90 PR-AUC is 0.079 all / 0.102 seen /
+      0.026 cold-start with 58 trees selected on rolling validation. ✓
+- [x] Compare a role-aware temporal
       GraphSAGE using event age/recency and causal company-state updates. Report multiple neural seeds.
       Use p90 for the first complete pass: impairment timing is unresolved and the mature p180 test cohort
-      has zero positives at the current dates.
-- [ ] Create a visual studybook showing an event timeline, legal/illegal messages, rolling folds, company
-      memory updates, and the temporal-vs-tabular comparison.
+      has zero positives at the current dates. The first four-channel temporal role model averages PR-AUC
+      0.053 ± 0.033 overall versus LightGBM's 0.079 across five frozen seeds. ✓
+- [x] Create a visual studybook showing an event timeline, legal/illegal messages, rolling folds, causal
+      context updates, and the temporal-vs-tabular comparison. Notebook 06 explains the model from first
+      principles and visualizes seed instability. ✓
+- [ ] Run temporal component ablations chosen on validation folds: root-only control, relation collapse,
+      no-decay/predeclared half-lives, and hub-aware recent-neighbour aggregation. Root-only is complete:
+      relation contexts improve overall/seen means but hurt cold-start; remaining ablations stay open.
 
 Detailed audit: `wiki/this-project/evaluation.md`; concept guide:
-`wiki/gnn-concepts/temporal-graphs.md`; bond-feature audit:
+`wiki/gnn-concepts/temporal-graphs.md` and `wiki/gnn-concepts/temporal-role-gnn.md`; bond-feature audit:
 `wiki/this-project/bond-graph-leakage-audit.md`.
 
 ---

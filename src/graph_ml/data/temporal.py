@@ -191,3 +191,250 @@ def build_strictly_prior_histories(
     result = joined[output_columns].reset_index(drop=True)
     result.index = events.index
     return result
+
+
+def query_strictly_prior_histories(
+    events: pd.DataFrame,
+    *,
+    event_entity_column: str,
+    event_timestamp_column: str,
+    value_columns: Sequence[str],
+    query_entities: pd.Series,
+    query_timestamps: pd.Series,
+) -> pd.DataFrame:
+    """Query cumulative event histories immediately before arbitrary timestamps.
+
+    Unlike :func:`build_strictly_prior_histories`, query rows need not be events
+    in the source role. This allows, for example, asking for a seller endpoint's
+    earlier buyer-role history when that company is a hybrid. Output preserves
+    the query order and index; entities with no earlier event receive a zero
+    count and missing means.
+    """
+
+    value_columns = tuple(dict.fromkeys(value_columns))
+    required = {event_entity_column, event_timestamp_column, *value_columns}
+    missing = sorted(required - set(events.columns))
+    if missing:
+        raise ValueError(f"Missing required columns: {missing}")
+    if not value_columns:
+        raise ValueError("At least one value column is required")
+    if len(query_entities) != len(query_timestamps):
+        raise ValueError("query_entities and query_timestamps must align")
+    if query_entities.isna().any():
+        raise ValueError("query_entities cannot contain missing entities")
+
+    audit = audit_point_in_time_columns(value_columns)
+    if not audit.is_safe:
+        raise ValueError(
+            "Point-in-time histories cannot use unverified outcome/lifecycle/bond "
+            f"columns: {list(audit.prohibited)}"
+        )
+    event_times = pd.to_datetime(events[event_timestamp_column], errors="coerce")
+    query_times = pd.to_datetime(query_timestamps, errors="coerce")
+    if event_times.isna().any() or query_times.isna().any():
+        raise ValueError("Event and query timestamps must be valid")
+    if events[event_entity_column].isna().any():
+        raise ValueError(f"{event_entity_column} cannot contain missing entities")
+
+    numeric = events.loc[:, value_columns].apply(pd.to_numeric, errors="coerce")
+    invalid = numeric.isna() & events.loc[:, value_columns].notna()
+    if invalid.any(axis=None):
+        bad = sorted(invalid.columns[invalid.any()].tolist())
+        raise ValueError(f"History value columns must be numeric: {bad}")
+
+    working = numeric.copy()
+    working["__entity"] = events[event_entity_column].map(
+        canonicalize_company_name
+    ).to_numpy()
+    working["__timestamp"] = event_times.to_numpy()
+    grouped = working.groupby(["__entity", "__timestamp"], sort=True, observed=True)
+    bucket_size = grouped.size().rename("__size")
+    bucket_sum = grouped[list(value_columns)].sum(min_count=1).add_suffix("__sum")
+    bucket_valid = grouped[list(value_columns)].count().add_suffix("__valid")
+    aggregate = pd.concat((bucket_size, bucket_sum, bucket_valid), axis=1).reset_index()
+    aggregate = aggregate.sort_values(["__entity", "__timestamp"], kind="stable")
+    aggregate["__cum_count"] = aggregate.groupby("__entity", sort=False)[
+        "__size"
+    ].cumsum()
+    for column in value_columns:
+        aggregate[f"{column}__cum_sum"] = aggregate[f"{column}__sum"].fillna(0).groupby(
+            aggregate["__entity"], sort=False
+        ).cumsum()
+        aggregate[f"{column}__cum_valid"] = aggregate.groupby(
+            "__entity", sort=False
+        )[f"{column}__valid"].cumsum()
+
+    query_keys = query_entities.map(canonicalize_company_name).to_numpy()
+    output = pd.DataFrame(
+        {"history_count": np.zeros(len(query_entities), dtype=np.int64)},
+        index=query_entities.index,
+    )
+    for column in value_columns:
+        output[f"history_mean__{column}"] = np.nan
+
+    positions_by_entity: dict[str, list[int]] = {}
+    for position, key in enumerate(query_keys):
+        positions_by_entity.setdefault(key, []).append(position)
+    history_by_entity = {
+        entity: group.reset_index(drop=True)
+        for entity, group in aggregate.groupby("__entity", sort=False, observed=True)
+    }
+    for entity, positions in positions_by_entity.items():
+        history = history_by_entity.get(entity)
+        if history is None:
+            continue
+        event_values = history["__timestamp"].to_numpy(dtype="datetime64[ns]")
+        query_values = query_times.iloc[positions].to_numpy(dtype="datetime64[ns]")
+        prior_positions = np.searchsorted(event_values, query_values, side="left") - 1
+        has_history = prior_positions >= 0
+        if not has_history.any():
+            continue
+        query_positions = np.asarray(positions, dtype=np.int64)[has_history]
+        selected = history.iloc[prior_positions[has_history]]
+        output.iloc[query_positions, output.columns.get_loc("history_count")] = selected[
+            "__cum_count"
+        ].to_numpy(dtype=np.int64)
+        for column in value_columns:
+            valid = selected[f"{column}__cum_valid"].to_numpy(dtype=np.int64)
+            sums = selected[f"{column}__cum_sum"].to_numpy(dtype=np.float64)
+            means = np.divide(
+                sums,
+                valid,
+                out=np.full(sums.shape, np.nan, dtype=np.float64),
+                where=valid > 0,
+            )
+            output.iloc[
+                query_positions,
+                output.columns.get_loc(f"history_mean__{column}"),
+            ] = means
+    return output
+
+
+def query_time_decayed_histories(
+    events: pd.DataFrame,
+    *,
+    event_entity_column: str,
+    event_timestamp_column: str,
+    value_columns: Sequence[str],
+    query_entities: pd.Series,
+    query_timestamps: pd.Series,
+    half_life_days: float,
+) -> pd.DataFrame:
+    """Query strictly-prior histories with exponential recency weighting.
+
+    An event's relative weight halves every ``half_life_days``. The common
+    query-time factor cancels from weighted means, allowing exact prefix sums
+    without materializing every historical neighbor for every query.
+    """
+
+    if half_life_days <= 0:
+        raise ValueError("half_life_days must be positive")
+    value_columns = tuple(dict.fromkeys(value_columns))
+    required = {event_entity_column, event_timestamp_column, *value_columns}
+    missing = sorted(required - set(events.columns))
+    if missing:
+        raise ValueError(f"Missing required columns: {missing}")
+    if not value_columns:
+        raise ValueError("At least one value column is required")
+    if len(query_entities) != len(query_timestamps):
+        raise ValueError("query_entities and query_timestamps must align")
+    audit = audit_point_in_time_columns(value_columns)
+    if not audit.is_safe:
+        raise ValueError(
+            "Time-decayed histories cannot use unverified outcome/lifecycle/bond "
+            f"columns: {list(audit.prohibited)}"
+        )
+
+    event_times = pd.to_datetime(events[event_timestamp_column], errors="coerce")
+    query_times = pd.to_datetime(query_timestamps, errors="coerce")
+    if event_times.isna().any() or query_times.isna().any():
+        raise ValueError("Event and query timestamps must be valid")
+    if events[event_entity_column].isna().any() or query_entities.isna().any():
+        raise ValueError("Event and query entities cannot be missing")
+    numeric = events.loc[:, value_columns].apply(pd.to_numeric, errors="coerce")
+    invalid = numeric.isna() & events.loc[:, value_columns].notna()
+    if invalid.any(axis=None):
+        bad = sorted(invalid.columns[invalid.any()].tolist())
+        raise ValueError(f"History value columns must be numeric: {bad}")
+
+    working = numeric.copy()
+    working["__entity"] = events[event_entity_column].map(
+        canonicalize_company_name
+    ).to_numpy()
+    working["__timestamp"] = event_times.to_numpy()
+    grouped = working.groupby(["__entity", "__timestamp"], sort=True, observed=True)
+    size = grouped.size().rename("__size")
+    sums = grouped[list(value_columns)].sum(min_count=1).add_suffix("__sum")
+    valid = grouped[list(value_columns)].count().add_suffix("__valid")
+    aggregate = pd.concat((size, sums, valid), axis=1).reset_index()
+    aggregate = aggregate.sort_values(["__entity", "__timestamp"], kind="stable")
+    reference = aggregate["__timestamp"].max()
+    elapsed = (aggregate["__timestamp"] - reference).dt.total_seconds() / 86_400
+    growth = np.log(2.0) / half_life_days
+    aggregate["__weight"] = np.exp(growth * elapsed)
+    aggregate["__cum_count"] = aggregate.groupby("__entity", sort=False)[
+        "__size"
+    ].cumsum()
+    for column in value_columns:
+        weighted_sum = aggregate[f"{column}__sum"].fillna(0) * aggregate["__weight"]
+        weighted_valid = aggregate[f"{column}__valid"] * aggregate["__weight"]
+        aggregate[f"{column}__cum_weighted_sum"] = weighted_sum.groupby(
+            aggregate["__entity"], sort=False
+        ).cumsum()
+        aggregate[f"{column}__cum_weighted_valid"] = weighted_valid.groupby(
+            aggregate["__entity"], sort=False
+        ).cumsum()
+
+    output = pd.DataFrame(
+        {
+            "history_count": np.zeros(len(query_entities), dtype=np.int64),
+            "history_age_days": np.zeros(len(query_entities), dtype=np.float64),
+        },
+        index=query_entities.index,
+    )
+    for column in value_columns:
+        output[f"history_decay_mean__{column}"] = np.nan
+    query_keys = query_entities.map(canonicalize_company_name).to_numpy()
+    positions_by_entity: dict[str, list[int]] = {}
+    for position, key in enumerate(query_keys):
+        positions_by_entity.setdefault(key, []).append(position)
+    history_by_entity = {
+        entity: group.reset_index(drop=True)
+        for entity, group in aggregate.groupby("__entity", sort=False, observed=True)
+    }
+    for entity, positions in positions_by_entity.items():
+        history = history_by_entity.get(entity)
+        if history is None:
+            continue
+        event_values = history["__timestamp"].to_numpy(dtype="datetime64[ns]")
+        query_values = query_times.iloc[positions].to_numpy(dtype="datetime64[ns]")
+        prior = np.searchsorted(event_values, query_values, side="left") - 1
+        has_history = prior >= 0
+        if not has_history.any():
+            continue
+        query_positions = np.asarray(positions, dtype=np.int64)[has_history]
+        selected = history.iloc[prior[has_history]]
+        output.iloc[query_positions, output.columns.get_loc("history_count")] = selected[
+            "__cum_count"
+        ].to_numpy(dtype=np.int64)
+        ages = (
+            query_times.iloc[query_positions].to_numpy(dtype="datetime64[ns]")
+            - selected["__timestamp"].to_numpy(dtype="datetime64[ns]")
+        ) / np.timedelta64(1, "D")
+        output.iloc[
+            query_positions, output.columns.get_loc("history_age_days")
+        ] = ages
+        for column in value_columns:
+            numerator = selected[f"{column}__cum_weighted_sum"].to_numpy(float)
+            denominator = selected[f"{column}__cum_weighted_valid"].to_numpy(float)
+            means = np.divide(
+                numerator,
+                denominator,
+                out=np.full(numerator.shape, np.nan),
+                where=denominator > 0,
+            )
+            output.iloc[
+                query_positions,
+                output.columns.get_loc(f"history_decay_mean__{column}"),
+            ] = means
+    return output

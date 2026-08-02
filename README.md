@@ -51,14 +51,20 @@ jupyter lab notebooks/
 
 ## Status
 
-Planning/design, graph construction, fixed-origin evaluation, EDA/topology, and the first complete model
-comparison are implemented. Relation-aware GraphSAGE reaches 0.305 PR-AUC at seed 42 but only
+Planning/design, graph construction, fixed-origin evaluation, EDA/topology, and two complete model
+comparisons are implemented. Relation-aware static GraphSAGE reaches 0.305 PR-AUC at seed 42 but only
 0.244 ± 0.079 across five frozen-configuration seeds, below the strong LightGBM baseline's 0.465. The
 result, including seen/cold-start breakdowns and visual diagnostics, is recorded honestly rather than
 tuned against test labels. A 2026-08-02 audit found no direct outcome fields in either model's inputs and
 confirmed post-cutoff message isolation, but also found that final-snapshot label maturity and cutoff-wide
-training histories are not fully point-in-time. These scores are therefore retrospective benchmarks; the
-next milestone is an as-of event/label pipeline, time-aware LightGBM baseline, and temporal GNN. See
+training histories are not fully point-in-time. Those impairment scores are therefore retrospective
+benchmarks. The first corrected causal p90 slice is now complete: LightGBM reaches 0.079 PR-AUC overall,
+while a four-channel temporal role GNN averages 0.053 ± 0.033 across five seeds. Cold-start remains near
+its 0.023 prevalence for both model families. See
 `specs/roadmap.md` (its "plan at a glance" table) for the phased plan and current progress, and
 `STUDYBOOK.md` for a fast orientation + decision log. The first causal-time lesson and bond-artifact audit
 are executable and visual in `notebooks/02_project/05_point_in_time_and_bond_audit.ipynb`.
+
+The visual derivation and honest comparison are in
+`notebooks/02_project/06_temporal_role_gnn.ipynb`; the causal p90 results are not numerically comparable
+with the retrospective impairment scores above because the targets and cohorts differ.

@@ -172,3 +172,23 @@ after the event stream and label-time contract are verified. See `wiki/gnn-conce
 Useful static ablations remain—root-only neural baseline, removal of pre-aggregated histories, relation
 collapse, degree-aware aggregation, and multiple seeds—but temporal correctness takes priority over
 architecture tuning.
+
+### First causal temporal implementation (2026-08-02)
+
+The first implementation now materializes each invoice's strictly-prior event context through four
+channels: seller endpoint in seller role, seller endpoint in buyer role, buyer endpoint in seller role,
+and buyer endpoint in buyer role. Within each channel, origination-safe event features receive
+exponential recency weights with a frozen 180-day half-life. Log history count, log age of the latest
+event, and a history-present indicator accompany each context.
+
+`TemporalRoleGNN` gives every channel independent message, time-metadata, and gate transforms, while a
+root path preserves the current invoice's own attributes. This is a causal one-layer bipartite message
+model over aggregated event histories, not yet a recurrent company-memory TGN. It eliminates the static
+model's within-training future-sibling visibility without using target-derived bond features.
+
+Five fixed seeds average p90 PR-AUC 0.053 overall versus causal LightGBM's 0.079. The wide overall seed
+variation and near-prevalence cold-start results mean the implementation establishes a correct temporal
+foundation, not a model win. Validation-only ablations should now isolate the root path, role separation,
+decay, and hub aggregation before adding recurrent memory or longer contagion paths. See
+`wiki/gnn-concepts/temporal-role-gnn.md` and
+`notebooks/02_project/06_temporal_role_gnn.ipynb`.

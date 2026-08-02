@@ -33,14 +33,16 @@ row into its own context. Updating with later invoices would leak the future.
 
 ## Recommended progression for this project
 
-First recover and document reliable event timestamps and snapshot semantics. Then create a streaming
-as-of feature builder and rolling-origin evaluation, and run LightGBM on that output. Next implement a
-role-aware temporal GraphSAGE with explicit edge age/recency decay. Only after this transparent model is
-correct should a learned-memory model be considered.
+The first complete progression is now implemented for p90: a due-date-plus-horizon label clock,
+strictly-as-of feature builder, rolling-origin evaluation, causal LightGBM, and a four-channel temporal
+role GNN with explicit age/recency decay. The GNN is causally cleaner than the earlier static benchmark
+but does not robustly beat causal LightGBM. See [Temporal role GNN](temporal-role-gnn.md).
 
-Time is therefore the next major direction, but initially as a **correctness improvement**, not a promise
-of a higher score. The time-aware LightGBM baseline is essential: otherwise any gain could come from a
-better data protocol rather than from the GNN.
+Time was therefore a **correctness improvement**, not a promise of a higher score. The matched
+time-aware LightGBM baseline was essential: it showed that correctness and predictive advantage are
+separate questions. Next come validation-only component ablations and multiple rolling test windows;
+learned recurrent company memory should be considered only after the transparent model is understood.
 
 Project-specific audit and protocol: `wiki/this-project/evaluation.md`. Graph schema and temporal extension:
-`wiki/this-project/graph-design.md`.
+`wiki/this-project/graph-design.md`. Visual applied studybook:
+`notebooks/02_project/06_temporal_role_gnn.ipynb`.

@@ -12,7 +12,7 @@ here. If this file starts to mirror the roadmap, prune it back.
 
 _(nothing actively in progress — next action is the top of "Next up")_
 
-## Next up — point-in-time correctness, then temporal modelling
+## Next up — validate temporal components without reusing the test period
 
 The first vertical slice is complete. These are the next evidence-building steps, not permission to tune
 against the held-out test set.
@@ -48,24 +48,32 @@ against the held-out test set.
        establish the prediction timestamp, impairment-event availability, closure semantics, and snapshot
        window meaning. The current workspace has only the eight Parquet files. →
        `wiki/this-project/data-availability.md`.
-9. [ ] **Build a point-in-time data contract** — strictly-earlier (`< t_i`) cumulative endpoint histories,
+9. [x] **Build a point-in-time tabular contract** — strictly-earlier (`< t_i`) cumulative endpoint histories,
        shifted so a row cannot include itself; label-availability masks; preprocessing fitted per rolling
-       training window; adversarial leakage tests. Strictly-prior histories, schema guard, event/horizon
-       label availability, and rolling masks are implemented; fold-fitted preprocessing integration
-       remains. → `wiki/this-project/evaluation.md`, `wiki/this-project/bond-graph-leakage-audit.md`.
-10. [ ] **Rebenchmark tabular first on p90** — p90 has a defensible due-date-plus-90-day availability rule
+       training window; adversarial leakage tests. Implemented for role-aware tabular features; temporal
+       graph-state integration remains in item 11. → `wiki/this-project/evaluation.md`,
+       `wiki/this-project/bond-graph-leakage-audit.md`.
+10. [x] **Rebenchmark tabular first on p90** — p90 has a defensible due-date-plus-90-day availability rule
         and viable current cohorts; p180 has zero mature test positives, while impairment event time is
-        unresolved. This separates corrected time handling from graph message passing.
-11. [ ] **Implement temporal GraphSAGE** — timestamped role edges, explicit age/recency weighting, causal
-        company-state updates, hub-aware recent-neighbor selection, and multiple seeds; document it as a
-        visual studybook. → `wiki/gnn-concepts/temporal-graphs.md`.
-12. [ ] **Backfill foundations and static ablations alongside the evidence** — message passing, root-only
-        neural baseline, remove pre-aggregated company histories, collapse relations, and test degree-aware
-        aggregation. GAT/GIN follow after the corrected evaluation contract.
+        unresolved. Causal LightGBM PR-AUC: 0.079 all / 0.102 seen / 0.026 cold-start. →
+        `results/point_in_time_p90_metrics.csv`, notebook 05.
+11. [x] **Implement the first temporal role GNN** — four typed strictly-prior event contexts, explicit
+        180-day recency decay, learned count/age gates, rolling epoch selection, refit, and five deterministic
+        seeds. Mean p90 PR-AUC is 0.053 overall versus LightGBM's 0.079; cold-start remains near prevalence.
+        → `wiki/gnn-concepts/temporal-role-gnn.md`, notebook 06.
+12. [ ] **Run validation-only temporal component ablations** — the root-only control is complete: relation
+        messages improve overall/seen means but hurt cold-start. Next improve empty-history fallback/gating,
+        then test relation collapse, no-decay/predeclared half-lives, and recent-neighbour handling for hubs. Choose changes on
+        rolling validation, not the already reported test period; report multiple seeds for neural models.
+13. [ ] **Add multiple rolling test windows** — confirm whether the LightGBM/GNN ordering and temporal
+        instability persist across time rather than relying on one deployment origin.
+14. [ ] **Backfill foundations alongside the evidence** — message passing and over-smoothing first;
+        GAT/GIN follow after the corrected evaluation contract and temporal ablations.
 
 ## Parked (revisit when the relevant phase starts)
 
-- Longer hybrid-mediated contagion and temporal message passing; the two-layer v1 does not test these.
+- Longer hybrid-mediated contagion and recurrent temporal company memory; the current one-layer temporal
+  context model does not test these.
 - Interactive Hugo showcase / D3 hero pieces (Phase 6).
 
 > Completed work is recorded as checked-off items in `specs/roadmap.md` and as dated entries in

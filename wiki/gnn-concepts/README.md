@@ -21,6 +21,8 @@ Planned entries (create as each is actually covered — don't pre-write stubs wi
   studybook)
 - [Temporal / dynamic graph learning](temporal-graphs.md) (causal event ordering, snapshots, time-aware
   messages, memory, and the next applied direction)
+- [Temporal role GNN](temporal-role-gnn.md) (the implemented four-channel, time-decayed causal model and
+  its leakage contract)
 
 **Architectures** (mirrors `notebooks/01_architectures/`)
 - GCN
@@ -28,4 +30,4 @@ Planned entries (create as each is actually covered — don't pre-write stubs wi
   relation-aware extension)
 - GAT
 - GIN
-- (heterogeneous and/or temporal GNN architecture(s), once Phase 4's applied-model decision is made)
+- [Temporal role GNN](temporal-role-gnn.md) (the first applied causal temporal architecture)

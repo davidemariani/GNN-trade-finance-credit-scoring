@@ -86,7 +86,12 @@ The applied notebooks now use a consistent set of tested teaching figures from `
   learned instrument embeddings.
 - notebook 05 separates prediction and label clocks on a timeline, compares mature p90/p180 cohorts,
   shows how simultaneous events share strictly-prior history, and visualizes the exact p90/p180 identity
-  anomaly in the stored bond-feature families.
+  anomaly in the stored bond-feature families. It then compares causal p90 PR-AUC with cohort prevalence
+  and ranks the fold-safe LightGBM feature gains.
+- notebook 06 contrasts legal and illegal temporal neighbours, draws the four role-aware message channels,
+  makes the 180-day exponential decay tangible, inspects real causal tensor/history coverage, shows
+  validation-only epoch selection, plots all five seeds against the fixed causal LightGBM bar, and uses a
+  root-only comparison to make the graph context's seen/cold-start trade-off visible.
 
 Every graph legend maps color to node or relation semantics. Real-data network figures expose anonymous
 topology only: generic `C*`/`I*` labels replace business identifiers, and bounded ego views replace an

@@ -140,9 +140,9 @@ rolling-origin masks that require a label to be knowable at the relevant boundar
 
 On the current fixed T/A dates, the horizon rule gives:
 
-| Target | Known-by-T train | Positives | Known-by-A test | Positives |
+| Target | Known-before-T train | Positives | Known-through-A test | Positives |
 |---|---:|---:|---:|---:|
-| p90 | 38,169 | 3,050 | 10,554 | 222 |
+| p90 | 38,083 | 3,041 | 10,554 | 222 |
 | p180 | 29,552 | 2,169 | 2,504 | 0 |
 
 p180 is not evaluable at this cutoff because the mature test cohort has no positives. Impairment remains
@@ -150,6 +150,82 @@ the main business target but needs a verified event timestamp. **p90 is therefor
 implementation target** for exercising the complete causal tabular/GNN pipeline without inventing
 impairment timing. This is a protocol decision, not permission to select a target based on which test
 score looks best.
+
+### First point-in-time p90 baseline (implemented 2026-08-02)
+
+The corrected LightGBM uses four origination-time instrument values plus strictly-prior count/mean
+histories. Each seller and buyer endpoint receives both earlier seller-role and buyer-role history, so
+hybrid companies remain represented. Same-timestamp invoices cannot see one another. During tree-count
+selection, medians and category vocabularies are fitted only on the early training cohort; after selecting
+58 trees, preprocessing and LightGBM are refitted on labels/features legally available before T.
+
+Rolling boundaries are train end 2017-08-01, validation/deployment cutoff 2018-04-30, and end-exclusive
+test boundary 2018-12-19 (therefore data through A=2018-12-18). Results:
+
+| Cohort | Rows | Positives | Prevalence | PR-AUC | ROC AUC | Precision@5% | Recall@5% |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| all | 10,554 | 222 | 2.10% | **0.079** | 0.819 | 12.88% | 30.63% |
+| seen | 8,119 | 166 | 2.04% | **0.102** | 0.867 | 10.59% | 25.90% |
+| cold-start | 2,435 | 56 | 2.30% | **0.026** | 0.585 | 0.00% | 0.00% |
+
+The overall model ranks risk substantially above the 0.021 no-skill PR-AUC, but cold-start performance is
+nearly at prevalence and retrieves no positives in the top 5%. Endpoint history features dominate gain;
+new companies lack precisely that signal. This makes causal cold-start handling a concrete temporal-GNN
+design requirement rather than a generic aspiration.
+
+Do **not** compare 0.079 numerically with the old 0.465: p90 and impairment have different labels,
+prevalences, maturity rules, and cohorts. The relevant comparison is the point-in-time p90 LightGBM
+versus the temporal p90 GNN on these identical masks and feature/event availability, reported below.
+
+Implementation: `src/graph_ml/baselines/point_in_time.py`; tests:
+`tests/baselines/test_temporal_tabular.py`; executed visual studybook:
+`notebooks/02_project/05_point_in_time_and_bond_audit.ipynb`; run log:
+`results/point_in_time_p90_metrics.csv`.
+
+### First causal temporal GNN (implemented 2026-08-02)
+
+The temporal role GNN uses the identical p90 availability object, rolling fold, origination features, and
+test cohorts as the corrected LightGBM. For every invoice it constructs four exponentially decayed
+strictly-prior contexts, preserving both the current endpoint (seller/buyer) and the historical role in
+which that company appeared. The frozen half-life is 180 days. Relation-specific learned transforms and
+gates receive the context plus log-count, log-age, and history-presence metadata; a root path retains the
+current invoice's own features.
+
+Epoch count is selected on the early rolling validation block, then a fresh deterministic CPU model is
+refitted on every label legally available before T. The test labels never enter preprocessing, temporal
+contexts, epoch selection, or fitting. Five seeds use one frozen configuration:
+
+| Cohort | Temporal GNN mean PR-AUC | Sample SD | Minimum | Maximum | LightGBM PR-AUC |
+|---|---:|---:|---:|---:|---:|
+| all | 0.053 | 0.033 | 0.023 | 0.105 | **0.079** |
+| seen | 0.065 | 0.044 | 0.024 | 0.135 | **0.102** |
+| cold-start | 0.023 | 0.003 | 0.019 | 0.027 | **0.026** |
+
+The seed-42 run reaches 0.034 overall / 0.041 seen / 0.025 cold-start. Seed 73 exceeds LightGBM overall
+and seen, but it is the held-out maximum, not evidence that the GNN wins; choosing it after inspecting
+test scores would be leakage. The five-seed distribution is the result. On average the GNN trails
+LightGBM overall and seen, is initialization-sensitive, and leaves cold-start almost exactly at its 0.023
+prevalence. Four of five seeds retrieve no cold-start positives within the top 5% review budget.
+
+This comparison closes the first causal temporal slice without establishing robust superiority. It also
+narrows the next experiments: root-only control, relation collapse, no-decay/predeclared half-lives,
+recent-neighbour attention or sampling for hubs, and better transferable current/company features for
+cold-start. Those choices must use validation folds while the reported 2018 test period remains sealed.
+Multiple rolling test windows are still future work; the current result is one fixed-origin held-out
+period, evaluated across multiple neural initializations.
+
+The first predeclared diagnostic removes all relation messages while retaining the nonlinear invoice-root
+network and identical rolling protocol. Across five seeds this **root-only neural control** averages
+PR-AUC 0.035 overall / 0.038 seen / 0.033 cold-start. Relation messages therefore improve the overall and
+seen means, but reduce cold-start from 0.033 to 0.023 and introduce much more seed variance. The graph
+history is useful when it exists; empty/sparse-history fallback and gating are the next validation target.
+Run log: `results/root_only_p90_metrics.csv`.
+
+Implementation: `src/graph_ml/data/temporal_graph.py`,
+`src/graph_ml/models/temporal_role_gnn.py`, and `src/graph_ml/training/temporal_gnn.py`; concept guide:
+`wiki/gnn-concepts/temporal-role-gnn.md`; executed studybook:
+`notebooks/02_project/06_temporal_role_gnn.ipynb`; run log:
+`results/temporal_gnn_p90_metrics.csv`.
 
 ## Cold-start companies
 

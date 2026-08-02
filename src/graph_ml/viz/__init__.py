@@ -11,6 +11,8 @@ from graph_ml.viz.modeling import (
     plot_embedding_projection,
     plot_score_distributions,
     plot_seed_variability,
+    plot_temporal_decay_curve,
+    plot_temporal_message_schematic,
     plot_training_history,
     seed_metric_summary,
 )
@@ -51,6 +53,8 @@ __all__ = [
     "plot_message_passing_steps",
     "plot_score_distributions",
     "plot_seed_variability",
+    "plot_temporal_decay_curve",
+    "plot_temporal_message_schematic",
     "plot_temporal_cohorts",
     "plot_temporal_volume",
     "plot_training_history",

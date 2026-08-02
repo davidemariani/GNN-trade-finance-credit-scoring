@@ -178,6 +178,7 @@ def plot_seed_variability(
     metrics: pd.DataFrame,
     *,
     benchmark_pr_auc: dict[str, float] | None = None,
+    model_label: str = "GraphSAGE",
 ) -> Figure:
     """Plot every seed's cohort PR-AUC and optional fixed benchmark markers."""
 
@@ -201,7 +202,7 @@ def plot_seed_variability(
         marker="D",
         s=75,
         color="#111111",
-        label="GraphSAGE mean",
+        label=f"{model_label} mean",
         zorder=5,
     )
     if benchmark_pr_auc is not None:
@@ -222,12 +223,81 @@ def plot_seed_variability(
         [cohort.replace("test_", "").replace("_", "\n") for cohort in cohorts],
     )
     axis.set(
-        title="GraphSAGE varies materially across random initializations",
+        title=f"{model_label} varies across random initializations",
         ylabel="PR-AUC",
         ylim=(0, 0.55),
     )
     axis.legend(frameon=False, ncols=2, fontsize=8)
     axis.spines[["top", "right"]].set_visible(False)
+    figure.tight_layout()
+    return figure
+
+
+def plot_temporal_decay_curve(*, half_life_days: float = 180.0) -> Figure:
+    """Show how exponential message weight decreases with event age."""
+
+    if not np.isfinite(half_life_days) or half_life_days <= 0:
+        raise ValueError("half_life_days must be positive and finite")
+    ages = np.linspace(0, 4 * half_life_days, 401)
+    weights = np.exp(-np.log(2) * ages / half_life_days)
+    figure, axis = plt.subplots(figsize=(8.5, 4.2))
+    axis.plot(ages, weights, color="#4C72B0", linewidth=2.5)
+    axis.scatter([half_life_days], [0.5], color="#C44E52", s=65, zorder=3)
+    axis.axvline(half_life_days, color="#C44E52", linestyle="--", alpha=0.7)
+    axis.axhline(0.5, color="#C44E52", linestyle="--", alpha=0.7)
+    axis.annotate(
+        f"half-life = {half_life_days:g} days\nweight = 0.5",
+        (half_life_days, 0.5),
+        xytext=(1.35 * half_life_days, 0.68),
+        arrowprops={"arrowstyle": "->", "color": "#C44E52"},
+    )
+    axis.set(
+        title="Recent historical invoices contribute more to each message",
+        xlabel="Age of a strictly-prior invoice (days)",
+        ylabel="Relative message weight",
+        xlim=(0, 4 * half_life_days),
+        ylim=(0, 1.03),
+    )
+    axis.spines[["top", "right"]].set_visible(False)
+    figure.tight_layout()
+    return figure
+
+
+def plot_temporal_message_schematic() -> Figure:
+    """Draw the four role-aware history channels used for one current invoice."""
+
+    figure, axis = plt.subplots(figsize=(11, 5.4))
+    current = (0.5, 0.48)
+    channels = (
+        ((0.08, 0.82), "seller endpoint\nas seller", "#4C72B0"),
+        ((0.08, 0.20), "seller endpoint\nas buyer", "#55A868"),
+        ((0.92, 0.82), "buyer endpoint\nas seller", "#8172B2"),
+        ((0.92, 0.20), "buyer endpoint\nas buyer", "#C44E52"),
+    )
+    axis.scatter(*current, s=1_250, color="#F0A202", edgecolor="white", zorder=4)
+    axis.text(*current, "current\ninvoice", ha="center", va="center", weight="bold")
+    for (x, y), label, color in channels:
+        axis.scatter(x, y, s=1_050, color=color, alpha=0.9, edgecolor="white", zorder=3)
+        axis.text(x, y, label, ha="center", va="center", color="white", weight="bold")
+        axis.annotate(
+            "",
+            xy=(0.43 if x < 0.5 else 0.57, 0.48),
+            xytext=(x + 0.07 if x < 0.5 else x - 0.07, y),
+            arrowprops={"arrowstyle": "-|>", "color": color, "lw": 2},
+        )
+    axis.text(
+        0.5,
+        0.06,
+        "Each channel aggregates only invoices with event time < prediction time;\n"
+        "count, age, and history-presence metadata gate its learned message.",
+        ha="center",
+        va="center",
+        fontsize=10,
+    )
+    axis.set(title="One temporal message-passing layer preserves endpoint and role")
+    axis.set_xlim(0, 1)
+    axis.set_ylim(0, 1)
+    axis.axis("off")
     figure.tight_layout()
     return figure
 
