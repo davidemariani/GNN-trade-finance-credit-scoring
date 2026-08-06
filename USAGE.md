@@ -50,10 +50,11 @@ jupyter lab notebooks/
 
 See `specs/instructions/notebook-standards.md` before adding a new notebook.
 
-The executed applied notebooks are ordered `00` through `07`; notebook `05` begins the point-in-time
+The executed applied notebooks are ordered `00` through `08`; notebook `05` begins the point-in-time
 remediation with label clocks, causal histories, and the bond audit, while notebook `06` derives and
 evaluates the temporal role GNN, and notebook `07` introduces pre-holdout temporal backtesting and the
-temporal graph Transformer decision. The static GraphSAGE architecture derivation lives
+temporal graph Transformer decision, and notebook `08` fits, diagnoses, and evaluates that candidate.
+The static GraphSAGE architecture derivation lives
 in `notebooks/01_architectures/graphsage.ipynb`; the real-data comparison is
 `notebooks/02_project/04_hetero_graphsage.ipynb`. Both require Graphviz only when re-rendering the traced
 computational graph; their committed outputs remain visible without rerunning.
@@ -80,10 +81,21 @@ deterministic on CPU; the other frozen seeds remain in the result artifact so th
 variability without retraining five models every time. The five-seed root-only diagnostic is retained in
 `results/root_only_p90_metrics.csv` and visualized in the same notebook.
 
-`src/graph_ml/backtesting.py` runs LightGBM, root-only neural, and temporal role GNN across fold specs while
-rebuilding every learned stage per origin. The accepted development summary is
+`src/graph_ml/backtesting.py` runs LightGBM, root-only neural, temporal role GNN, and temporal graph
+Transformer across fold specs while rebuilding every learned stage per origin. The accepted development summary is
 `results/temporal_backtest_p90_summary.csv`; notebook 07 visualizes it without rerunning the expensive
 five-seed grid. The runner rejects statistically thin partitions by default.
+
+The attention-ready sequence builder is `build_temporal_event_sequences()` in
+`src/graph_ml/data/temporal_graph.py`. It returns `[invoice, relation, K, feature]` values plus aligned
+ages, validity masks, and source indices. Notebook 07 builds and visualizes the real K=8 artifact (about
+111 MiB with the current 12 event features); it does not contain outcomes or business identifiers.
+
+The attention model is `src/graph_ml/models/temporal_graph_transformer.py`; rolling epoch selection and
+refit live in `src/graph_ml/training/temporal_transformer.py`. Five-seed run-level evidence is in
+`results/temporal_transformer_backtest_p90_metrics.csv` and its aggregate rows are part of the shared
+backtest summary. Notebook 08 fits one reproducible illustrative run, plots its training trace and
+anonymous attention weights, then reads the committed five-seed artifact for the honest comparison.
 
 ## Git / GitHub
 

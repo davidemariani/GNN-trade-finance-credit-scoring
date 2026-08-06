@@ -200,3 +200,14 @@ several bounded recent events per role instead of immediately collapsing them to
 a small causal temporal graph Transformer to learn content-dependent neighbour weights. The hard
 requirements are strict `< t_i` masking, relation identity, an explicit empty-history root fallback, and
 a hub cap chosen on development folds. See `wiki/gnn-concepts/temporal-graph-transformers.md`.
+
+As of 2026-08-06 that representation and its first attention model are implemented. `TemporalEventSequences` stores newest-first
+`[invoice, relation, K, feature]` values with aligned positive ages, boolean validity masks, and source-row
+indices (`-1` for padding). Strict-left timestamp search excludes the current and all simultaneous events;
+K truncates only after causal eligibility. K=8 uses about 111 MiB for the current 59,820 × 4 × 8 × 12
+feature artifact. Hand-built tests change future features and verify earlier tensors remain identical.
+The 39,745-parameter Transformer uses learned log-age and relation encodings, four-head masked attention,
+an exact empty-history fallback, and a residual root path. Five-seed development results do not establish
+a win: it helps sparse fold-1 seen rows but trails LightGBM and fixed decay in fold 2. Notebook 08 shows
+one anonymous learned weight/age matrix and explicitly treats it as a conditional diagnostic, not a
+causal attribution.

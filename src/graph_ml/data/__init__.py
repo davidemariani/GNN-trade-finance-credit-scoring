@@ -17,7 +17,9 @@ from graph_ml.data.temporal import (
 )
 from graph_ml.data.temporal_graph import (
     TEMPORAL_RELATIONS,
+    TemporalEventSequences,
     TemporalRelationContext,
+    build_temporal_event_sequences,
     build_temporal_relation_context,
 )
 
@@ -26,6 +28,7 @@ __all__ = [
     "GraphBuildResult",
     "GraphMetadata",
     "TEMPORAL_RELATIONS",
+    "TemporalEventSequences",
     "TemporalRelationContext",
     "FeatureLeakageAudit",
     "audit_point_in_time_columns",
@@ -35,5 +38,6 @@ __all__ = [
     "build_trade_finance_graph",
     "build_trade_finance_graph_from_parquet",
     "build_temporal_relation_context",
+    "build_temporal_event_sequences",
     "canonicalize_company_name",
 ]

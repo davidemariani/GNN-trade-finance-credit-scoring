@@ -239,26 +239,35 @@ validation block with only nine. The accepted twelve-month folds are:
 
 PR-AUC results (neural entries are five-seed mean ± sample SD):
 
-| Fold | Cohort | Prevalence | LightGBM | Root only | Temporal role GNN |
-|---|---|---:|---:|---:|---:|
-| 1 | all | 0.41% | 0.007 | 0.008 ± 0.005 | 0.012 ± 0.018 |
-| 1 | seen | 0.37% | 0.009 | 0.011 ± 0.007 | 0.006 ± 0.004 |
-| 1 | cold-start | 0.45% | 0.007 | 0.010 ± 0.007 | 0.018 ± 0.030 |
-| 2 | all | 9.77% | 0.120 | 0.094 ± 0.041 | 0.119 ± 0.046 |
-| 2 | seen | 16.22% | 0.157 | 0.138 ± 0.034 | 0.194 ± 0.071 |
-| 2 | cold-start | 7.08% | 0.119 | 0.077 ± 0.039 | 0.092 ± 0.039 |
+| Fold | Cohort | Prevalence | LightGBM | Root only | Temporal role GNN | Temporal Transformer |
+|---|---|---:|---:|---:|---:|---:|
+| 1 | all | 0.41% | 0.007 | 0.008 ± 0.005 | 0.012 ± 0.018 | 0.016 ± 0.011 |
+| 1 | seen | 0.37% | 0.009 | 0.011 ± 0.007 | 0.006 ± 0.004 | 0.034 ± 0.028 |
+| 1 | cold-start | 0.45% | 0.007 | 0.010 ± 0.007 | 0.018 ± 0.030 | 0.005 ± 0.001 |
+| 2 | all | 9.77% | 0.120 | 0.094 ± 0.041 | 0.119 ± 0.046 | 0.087 ± 0.011 |
+| 2 | seen | 16.22% | 0.157 | 0.138 ± 0.034 | 0.194 ± 0.071 | 0.146 ± 0.018 |
+| 2 | cold-start | 7.08% | 0.119 | 0.077 ± 0.039 | 0.092 ± 0.039 | 0.067 ± 0.010 |
 
 The experiment does not establish a universal winner. Prevalence and model ordering change materially
 through time; fold 1 contains only 27 test positives and its neural ranges are correspondingly unstable.
 In fold 2 the temporal GNN is effectively tied with LightGBM overall, stronger on seen companies, and
-weaker on cold-start. Together with the final-holdout result, this supports selective temporal context
-for history-rich companies but not test-driven tuning of one fixed-decay model.
+weaker on cold-start. The Transformer improves sparse fold-1 seen-company ranking, but trails both leading
+families in fold 2 and does not solve cold start. Together with the final-holdout result, this supports
+selective temporal context for history-rich companies but not promotion of attention on novelty alone.
 
-The backtests are now the selection environment for bounded recent-event attention and a small temporal
-graph Transformer. Implementation: `src/graph_ml/backtesting.py`; fold construction:
+The backtests remain the selection environment for bounded recent-event attention ablations.
+Implementation: `src/graph_ml/backtesting.py`; fold construction:
 `src/graph_ml/evaluation/point_in_time.py`; summary artifact:
 `results/temporal_backtest_p90_summary.csv`; visual studybook:
-`notebooks/02_project/07_temporal_backtesting.ipynb`.
+`notebooks/02_project/07_temporal_backtesting.ipynb`; Transformer derivation and result:
+`notebooks/02_project/08_temporal_graph_transformer.ipynb`.
+
+The bounded input contract was implemented on 2026-08-06. Every query retains at most K newest events
+per endpoint/role after applying strict `< t_i` eligibility, with aligned ages, validity masks, and source
+indices. Future-feature mutation and simultaneous-event tests protect the causal mask before any
+Transformer parameters exist. This separates data correctness from architecture correctness. The first
+attention comparison now uses this exact contract; its run-level artifact is
+`results/temporal_transformer_backtest_p90_metrics.csv`.
 
 Implementation: `src/graph_ml/data/temporal_graph.py`,
 `src/graph_ml/models/temporal_role_gnn.py`, and `src/graph_ml/training/temporal_gnn.py`; concept guide:

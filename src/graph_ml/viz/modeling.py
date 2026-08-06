@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 import numpy as np
@@ -324,7 +326,11 @@ def plot_temporal_attention_schematic() -> Figure:
             va="center",
             color="white",
             weight="bold",
-            bbox={"boxstyle": "round,pad=0.7", "facecolor": color, "edgecolor": "white"},
+            bbox={
+                "boxstyle": "round,pad=0.7",
+                "facecolor": color,
+                "edgecolor": "white",
+            },
         )
     for start, end in (
         ((0.17, 0.63), (0.29, 0.49)),
@@ -332,7 +338,12 @@ def plot_temporal_attention_schematic() -> Figure:
         ((0.47, 0.44), (0.53, 0.44)),
         ((0.72, 0.44), (0.79, 0.44)),
     ):
-        axis.annotate("", xy=end, xytext=start, arrowprops={"arrowstyle": "-|>", "lw": 2, "color": "#444444"})
+        axis.annotate(
+            "",
+            xy=end,
+            xytext=start,
+            arrowprops={"arrowstyle": "-|>", "lw": 2, "color": "#444444"},
+        )
     axis.text(
         0.5,
         0.08,
@@ -349,6 +360,118 @@ def plot_temporal_attention_schematic() -> Figure:
     axis.set_xlim(0, 1)
     axis.set_ylim(0, 1)
     axis.axis("off")
+    figure.tight_layout()
+    return figure
+
+
+def plot_temporal_event_slots(
+    age_days: ArrayLike,
+    valid_mask: ArrayLike,
+    relation_names: tuple[str, ...],
+) -> Figure:
+    """Inspect one invoice's bounded newest-first temporal event slots."""
+
+    ages = np.asarray(age_days, dtype=float)
+    valid = np.asarray(valid_mask, dtype=bool)
+    if ages.ndim != 2 or ages.shape != valid.shape:
+        raise ValueError("age_days and valid_mask must be aligned [relations, slots]")
+    if ages.shape[0] != len(relation_names) or ages.shape[1] < 1:
+        raise ValueError("relation_names and at least one slot are required")
+    if not np.isfinite(ages).all() or (ages[valid] <= 0).any():
+        raise ValueError("Valid event ages must be positive and finite")
+    figure, axis = plt.subplots(figsize=(10, 4.4))
+    axis.imshow(valid, cmap="Blues", vmin=0, vmax=1, aspect="auto")
+    for relation in range(ages.shape[0]):
+        for slot in range(ages.shape[1]):
+            label = (
+                f"{ages[relation, slot]:.0f}d" if valid[relation, slot] else "padding"
+            )
+            axis.text(
+                slot,
+                relation,
+                label,
+                ha="center",
+                va="center",
+                color="white" if valid[relation, slot] else "#666666",
+                fontsize=8,
+            )
+    axis.set_xticks(
+        range(ages.shape[1]), [f"slot {slot + 1}" for slot in range(ages.shape[1])]
+    )
+    axis.set_yticks(
+        range(ages.shape[0]),
+        [
+            name.replace("_endpoint__", " → ").replace("_role", "")
+            for name in relation_names
+        ],
+    )
+    axis.set(
+        title="Attention-ready event slots are newest-first within each role",
+        xlabel="bounded historical-event position",
+    )
+    figure.tight_layout()
+    return figure
+
+
+def plot_temporal_attention_weights(
+    weights: ArrayLike,
+    age_days: ArrayLike,
+    valid_mask: ArrayLike,
+    relation_names: Sequence[str],
+) -> Figure:
+    """Show learned attention and age for one invoice's bounded history."""
+
+    attention = np.asarray(weights, dtype=float)
+    ages = np.asarray(age_days, dtype=float)
+    valid = np.asarray(valid_mask, dtype=bool)
+    if (
+        attention.ndim != 2
+        or attention.shape != ages.shape
+        or attention.shape != valid.shape
+    ):
+        raise ValueError("weights, age_days, and valid_mask must be aligned 2D arrays")
+    if attention.shape[0] != len(relation_names):
+        raise ValueError("relation_names must align with the first tensor dimension")
+    if not np.isfinite(attention).all() or (attention < 0).any():
+        raise ValueError("attention weights must be finite and non-negative")
+    if not np.allclose(attention[~valid], 0):
+        raise ValueError("padding slots must have zero attention")
+
+    displayed = np.ma.masked_where(~valid, attention)
+    figure, axis = plt.subplots(
+        figsize=(max(7.5, 0.85 * attention.shape[1]), 1.15 * attention.shape[0] + 1.8)
+    )
+    image = axis.imshow(displayed, cmap="YlGnBu", vmin=0, aspect="auto")
+    for relation, slot in np.ndindex(attention.shape):
+        label = (
+            f"{attention[relation, slot]:.2f}\n{ages[relation, slot]:.0f}d"
+            if valid[relation, slot]
+            else "padding"
+        )
+        axis.text(
+            slot,
+            relation,
+            label,
+            ha="center",
+            va="center",
+            fontsize=8,
+            color="white"
+            if valid[relation, slot] and attention[relation, slot] > 0.35
+            else "#333333",
+        )
+    axis.set_xticks(
+        range(attention.shape[1]),
+        [f"slot {slot + 1}" for slot in range(attention.shape[1])],
+    )
+    axis.set_yticks(
+        range(attention.shape[0]),
+        [name.replace("__", " → ") for name in relation_names],
+    )
+    axis.set(
+        title="Where one fitted query places attention",
+        xlabel="newest-first event slot (cell: weight / age)",
+    )
+    figure.colorbar(image, ax=axis, label="attention weight")
     figure.tight_layout()
     return figure
 
@@ -414,9 +537,7 @@ def plot_expanding_backtest_windows(
         title="Development windows end before the sealed final holdout",
         xlabel="calendar time",
     )
-    axis.legend(
-        frameon=False, ncols=4, loc="upper center", bbox_to_anchor=(0.5, -0.28)
-    )
+    axis.legend(frameon=False, ncols=4, loc="upper center", bbox_to_anchor=(0.5, -0.28))
     axis.spines[["top", "right", "left"]].set_visible(False)
     figure.tight_layout()
     return figure
@@ -443,21 +564,19 @@ def plot_backtest_pr_auc(summary: pd.DataFrame) -> Figure:
         1, len(cohorts), figsize=(5 * len(cohorts), 4.6), sharey=True
     )
     axes = np.atleast_1d(axes)
-    width = 0.24
-    colors = ("#4C72B0", "#8172B2", "#C44E52")
+    width = min(0.8 / len(models), 0.24)
+    colors = ("#4C72B0", "#8172B2", "#C44E52", "#55A868")
+    if len(models) > len(colors):
+        raise ValueError("Backtest plot supports at most four model families")
     for axis, cohort in zip(axes, cohorts, strict=True):
         rows = summary.loc[summary["cohort"] == cohort]
         x = np.arange(len(folds), dtype=float)
-        for offset, (model, color) in enumerate(
-            zip(models, colors, strict=False)
-        ):
+        for offset, (model, color) in enumerate(zip(models, colors, strict=False)):
             ordered = rows.loc[rows["model"] == model].set_index("fold").loc[folds]
             means = ordered["mean_pr_auc"].to_numpy()
-            errors = np.vstack(
-                (means - ordered["minimum"], ordered["maximum"] - means)
-            )
+            errors = np.vstack((means - ordered["minimum"], ordered["maximum"] - means))
             axis.bar(
-                x + (offset - 1) * width,
+                x + (offset - (len(models) - 1) / 2) * width,
                 means,
                 width,
                 color=color,
@@ -466,9 +585,7 @@ def plot_backtest_pr_auc(summary: pd.DataFrame) -> Figure:
                 capsize=3,
             )
         prevalence = (
-            rows.drop_duplicates("fold")
-            .set_index("fold")
-            .loc[folds, "prevalence"]
+            rows.drop_duplicates("fold").set_index("fold").loc[folds, "prevalence"]
         )
         axis.plot(x, prevalence, "k--o", label="prevalence")
         axis.set_xticks(x, [f"fold {fold}" for fold in folds])

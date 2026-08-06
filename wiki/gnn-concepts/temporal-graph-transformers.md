@@ -39,13 +39,11 @@ current-invoice features or transferable company descriptors. Attention also add
 parameter count, and leakage surfaces: an incorrect causal mask, future-derived neighbour list, or
 padding convention can invalidate the experiment.
 
-## Project decision
+## Project decision and result
 
-A TGAT-style candidate is worth implementing **after** a tested bounded recent-event tensor exists. It
-must use the pre-holdout development folds in `notebooks/02_project/07_temporal_backtesting.ipynb`, five
-seeds, a comparable parameter budget, and the same p90 label clock. Architecture and hyperparameters are
-chosen on development-fold aggregates; the reported April–December 2018 holdout is not reused for
-selection.
+A TGAT-style candidate was evaluated using the pre-holdout development folds, five seeds, a 39,745
+parameter budget, and the same p90 label clock. The reported April–December 2018 holdout was not reused
+for selection.
 
 The first candidate should be deliberately small:
 
@@ -56,9 +54,25 @@ The first candidate should be deliberately small:
 - a fixed recent-neighbour cap for hubs;
 - explicit empty-history fallback to the root path.
 
+The model core is now implemented as `TemporalGraphTransformer`. It projects the current invoice to a
+query/root state; adds learned relation and log-age encodings to historical event keys/values; performs
+multi-head attention only for rows with at least one valid event; and applies residual normalization plus
+a feed-forward block. Tests establish that valid weights sum to one, padding weights are zero, changing
+masked values cannot change logits, empty history produces a zero attention message, and loss decreases
+on a tiny overfit case. The rolling wrapper fits preprocessing on the legal training population, selects
+epoch on validation PR-AUC, then refits a fresh model and encoder on train plus validation.
+
+The result is mixed. Fold 1 Transformer PR-AUC is 0.016 overall and 0.034 for seen companies, versus
+0.012 and 0.006 for the fixed-decay GNN. In fold 2 it reaches 0.087 overall and 0.146 seen, below
+LightGBM (0.120 / 0.157) and the fixed-decay GNN (0.119 / 0.194). Cold-start remains near or below the
+best alternatives because attention cannot select absent history. This candidate is therefore retained
+but not promoted. Next ablations must remain validation-only: time encoding, capacity/regularization, K,
+and root/message fusion.
+
 ## Related material
 
 - General event-time principles: [Temporal graphs](temporal-graphs.md)
 - Current fixed-decay model: [Temporal role GNN](temporal-role-gnn.md)
-- Applied backtest and visual comparison: `notebooks/02_project/07_temporal_backtesting.ipynb`
+- Applied derivation, fitted attention diagnostic, and result: `notebooks/02_project/08_temporal_graph_transformer.ipynb`
+- Bounded causal event tensors: `src/graph_ml/data/temporal_graph.py`
 - Evaluation contract: `wiki/this-project/evaluation.md`

@@ -73,5 +73,8 @@ Two pre-holdout expanding-window backtests now protect the reported 2018 period 
 tuning. They reveal strong temporal drift: in the later development fold the temporal GNN is effectively
 tied with LightGBM overall (0.119 vs. 0.120 mean PR-AUC), stronger on seen companies (0.194 vs. 0.157),
 and weaker on cold-start (0.092 vs. 0.119), with material seed variance. The visual explanation is in
-`notebooks/02_project/07_temporal_backtesting.ipynb`. A small causally masked temporal graph Transformer is
-the next architecture candidate, after bounded recent-event tensors and leakage tests are implemented.
+`notebooks/02_project/07_temporal_backtesting.ipynb`. The causally masked temporal graph Transformer is now
+implemented and evaluated across the same five seeds. It improves fold-1 seen-company mean PR-AUC to
+0.034 but trails LightGBM and the fixed-decay temporal GNN in fold 2 (0.087 overall versus 0.120 and
+0.119). Notebook `08_temporal_graph_transformer.ipynb` derives the model, visualizes a real learned
+attention pattern, and explains why attention weights are diagnostics rather than causal explanations.

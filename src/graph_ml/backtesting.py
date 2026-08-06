@@ -22,7 +22,10 @@ from graph_ml.evaluation import (
 )
 from graph_ml.training import (
     TemporalGNNTrainingConfig,
+    TemporalTransformerTrainingConfig,
+    evaluate_temporal_transformer_run,
     evaluate_temporal_gnn_run,
+    fit_temporal_graph_transformer,
     fit_temporal_role_gnn,
 )
 
@@ -41,6 +44,9 @@ class TemporalBacktestConfig:
     )
     temporal_gnn: TemporalGNNTrainingConfig = field(
         default_factory=TemporalGNNTrainingConfig
+    )
+    temporal_transformer: TemporalTransformerTrainingConfig = field(
+        default_factory=TemporalTransformerTrainingConfig
     )
 
 
@@ -68,15 +74,11 @@ def run_temporal_backtest(
     features = build_point_in_time_feature_frame(instruments)
     frames: list[pd.DataFrame] = []
     for fold_index, spec in enumerate(specs, start=1):
-        fold = build_point_in_time_fold(
-            instruments["invoice_date"], availability, spec
-        )
+        fold = build_point_in_time_fold(instruments["invoice_date"], availability, spec)
         _require_minimum_class_counts(
             availability.labels, fold, config.minimum_class_count
         )
-        cold = point_in_time_cold_start_mask(
-            instruments, cutoff=fold.validation_end
-        )
+        cold = point_in_time_cold_start_mask(instruments, cutoff=fold.validation_end)
         cohorts = _nonempty_test_cohorts(fold.test_mask, cold)
 
         tabular_run = fit_point_in_time_lightgbm(
@@ -125,6 +127,30 @@ def run_temporal_backtest(
                         validation_pr_auc=neural_run.best_validation_pr_auc,
                     )
                 )
+        for seed in config.seeds:
+            transformer_run = fit_temporal_graph_transformer(
+                instruments,
+                features,
+                availability,
+                fold,
+                replace(config.temporal_transformer, seed=seed),
+            )
+            transformer_metrics = evaluate_temporal_transformer_run(
+                transformer_run,
+                availability,
+                cohorts,
+                review_fraction=config.review_fraction,
+            )
+            frames.append(
+                _annotate_metrics(
+                    transformer_metrics,
+                    fold_index=fold_index,
+                    fold=fold,
+                    seed=seed,
+                    selection_step=transformer_run.best_epoch,
+                    validation_pr_auc=transformer_run.best_validation_pr_auc,
+                )
+            )
     return pd.concat(frames, ignore_index=True)
 
 

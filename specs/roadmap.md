@@ -182,8 +182,15 @@ the test budget on more architecture tuning.
 - [x] Add pre-holdout expanding-window backtests with minimum class support. Two twelve-month folds now
       show time-varying prevalence/model ordering and provide the selection environment for architecture
       changes without reusing the reported final holdout. ✓
-- [ ] Build bounded strictly-prior role-event tensors and evaluate a small causal temporal graph
-      Transformer against fixed-decay GNN, root-only, and LightGBM on the development folds.
+- [x] Build bounded strictly-prior role-event tensors: newest-first values, positive ages, validity masks,
+      and auditable source indices with zero padding. Future/simultaneous isolation is tested and notebook
+      07 inspects the real K=8 artifact. ✓
+- [x] Evaluate a small causal temporal graph Transformer against fixed-decay GNN, root-only, and LightGBM
+      on the development folds. The model, masks/fallback, rolling refit, five-seed results, and learned
+      attention diagnostic are tested and explained in notebook 08. It helps sparse fold-1 seen rows but
+      trails both leading models in fold 2, so it is not promoted. ✓
+- [ ] Run validation-only Transformer ablations: explicit decay versus learned time, smaller capacity and
+      stronger regularization, K, and root/message fusion. Preserve five seeds and the sealed holdout.
 
 Detailed audit: `wiki/this-project/evaluation.md`; concept guide:
 `wiki/gnn-concepts/temporal-graphs.md`, `wiki/gnn-concepts/temporal-role-gnn.md`, and

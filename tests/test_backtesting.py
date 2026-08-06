@@ -8,6 +8,7 @@ from graph_ml.backtesting import TemporalBacktestConfig, run_temporal_backtest
 from graph_ml.baselines import PointInTimeLightGBMConfig
 from graph_ml.evaluation import RollingOriginFoldSpec
 from graph_ml.training import TemporalGNNTrainingConfig
+from graph_ml.training import TemporalTransformerTrainingConfig
 
 
 def _instruments() -> pd.DataFrame:
@@ -48,6 +49,16 @@ def test_temporal_backtest_runs_all_fixed_model_families():
                 patience=2,
                 seed=3,
             ),
+            temporal_transformer=TemporalTransformerTrainingConfig(
+                hidden_channels=4,
+                attention_heads=1,
+                max_events=2,
+                dropout=0,
+                batch_size=4,
+                max_epochs=2,
+                patience=2,
+                seed=3,
+            ),
         ),
     )
 
@@ -55,6 +66,7 @@ def test_temporal_backtest_runs_all_fixed_model_families():
         "point_in_time_lightgbm",
         "root_only_neural",
         "temporal_role_gnn",
+        "temporal_graph_transformer",
     }
     assert metrics["fold"].eq(1).all()
     assert metrics["test_end"].eq("2022-01-01").all()

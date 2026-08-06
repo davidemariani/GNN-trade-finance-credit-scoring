@@ -68,16 +68,23 @@ against the held-out test set.
 13. [x] **Add multiple rolling test windows** — two twelve-month pre-holdout folds now enforce minimum
         class support and show that prevalence, model ordering, and seed variance change materially over
         time. → `results/temporal_backtest_p90_summary.csv`, notebook 07.
-14. [ ] **Build bounded causal recent-event tensors** — retain a fixed number of strictly-prior events per
+14. [x] **Build bounded causal recent-event tensors** — retain a fixed number of strictly-prior events per
         endpoint/role with age, masks, and explicit empty-history handling; adversarially test future and
-        simultaneous-event isolation. This is shared infrastructure for recent-neighbour ablations and a
-        temporal graph Transformer.
-15. [ ] **Implement a small temporal graph Transformer candidate** — current invoice query, role-specific
+        simultaneous-event isolation. Implemented newest-first as values, ages, validity masks, and
+        auditable source indices; notebook 07 inspects real K=8 tensors. This is shared infrastructure for
+        recent-neighbour ablations and a temporal graph Transformer.
+15. [x] **Implement and evaluate a small temporal graph Transformer candidate** — current invoice query, role-specific
         historical keys/values, continuous time encoding, causal/padding masks, comparable parameter
         budget, five seeds, and selection only on the development backtests. Its applied notebook must
-        derive every technique before code and inspect tensor shapes, masks, and learned attention. →
-        `wiki/gnn-concepts/temporal-graph-transformers.md`.
-16. [ ] **Backfill foundations alongside the evidence** — message passing and over-smoothing first;
+        derive every technique before code and inspect tensor shapes, masks, and learned attention. The
+        The tested model, rolling train/select/refit wrapper, five-seed development backtest, and learned
+        attention diagnostic are complete. It improves sparse fold-1 seen-company ranking but trails
+        LightGBM and the fixed-decay GNN in denser fold 2, so it is retained as evidence rather than
+        promoted. → `wiki/gnn-concepts/temporal-graph-transformers.md`, notebook 08.
+16. [ ] **Ablate temporal attention on validation folds** — compare learned time encoding with explicit
+        decay, smaller capacity/stronger regularization, K, and root/message fusion. Do not consult the
+        sealed final holdout; retain five seeds and report seen/cold-start separately.
+17. [ ] **Backfill foundations alongside the evidence** — message passing and over-smoothing first;
         GAT/GIN follow after the corrected evaluation contract and temporal ablations.
 
 ## Parked (revisit when the relevant phase starts)

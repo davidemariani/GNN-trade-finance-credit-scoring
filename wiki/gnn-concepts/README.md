@@ -33,5 +33,5 @@ Planned entries (create as each is actually covered — don't pre-write stubs wi
 - GAT
 - GIN
 - [Temporal role GNN](temporal-role-gnn.md) (the first applied causal temporal architecture)
-- [Temporal graph Transformers](temporal-graph-transformers.md) (the next candidate after causal event
-  sequence construction)
+- [Temporal graph Transformers](temporal-graph-transformers.md) (the evaluated causal-attention candidate,
+  its mixed development result, and the next ablations)

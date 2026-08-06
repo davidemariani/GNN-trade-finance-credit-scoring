@@ -15,6 +15,8 @@ from graph_ml.viz import (
     plot_seed_variability,
     plot_temporal_decay_curve,
     plot_temporal_attention_schematic,
+    plot_temporal_attention_weights,
+    plot_temporal_event_slots,
     plot_temporal_message_schematic,
     plot_training_history,
     seed_metric_summary,
@@ -97,9 +99,40 @@ def test_temporal_attention_schematic_explains_causal_weighting():
     plt.close(figure)
 
 
+def test_temporal_event_slots_show_valid_ages_and_padding():
+    figure = plot_temporal_event_slots(
+        [[1, 4, 0], [2, 0, 0]],
+        [[True, True, False], [True, False, False]],
+        ("seller_endpoint__seller_role", "seller_endpoint__buyer_role"),
+    )
+
+    assert figure.axes[0].get_title().startswith("Attention-ready")
+    assert any(text.get_text() == "padding" for text in figure.axes[0].texts)
+    plt.close(figure)
+
+
 def test_temporal_decay_rejects_nonpositive_half_life():
     with pytest.raises(ValueError, match="positive"):
         plot_temporal_decay_curve(half_life_days=0)
+
+
+def test_temporal_attention_weights_show_values_ages_and_padding():
+    weights = np.array([[0.7, 0.0], [0.3, 0.0]])
+    ages = np.array([[2.0, 0.0], [15.0, 0.0]])
+    valid = np.array([[True, False], [True, False]])
+
+    figure = plot_temporal_attention_weights(weights, ages, valid, ("seller", "buyer"))
+
+    labels = {text.get_text() for text in figure.axes[0].texts}
+    assert {"0.70\n2d", "0.30\n15d", "padding"}.issubset(labels)
+    plt.close(figure)
+
+
+def test_temporal_attention_weights_reject_attention_on_padding():
+    with pytest.raises(ValueError, match="padding slots"):
+        plot_temporal_attention_weights(
+            [[0.8, 0.2]], [[1.0, 0.0]], [[True, False]], ("seller",)
+        )
 
 
 def test_backtest_figures_show_windows_and_model_ranges():
@@ -121,15 +154,37 @@ def test_backtest_figures_show_windows_and_model_ranges():
                     "prevalence": 0.1,
                 }
             )
-    windows = plot_expanding_backtest_windows(
-        specs, final_holdout_start="2023-01-01"
-    )
+    windows = plot_expanding_backtest_windows(specs, final_holdout_start="2023-01-01")
     comparison = plot_backtest_pr_auc(pd.DataFrame(rows))
 
     assert windows.axes[0].get_title().startswith("Development windows")
     assert comparison.axes[0].get_title() == "all"
     plt.close(windows)
     plt.close(comparison)
+
+
+def test_backtest_plot_supports_four_centered_model_families():
+    rows = []
+    for model in ("lightgbm", "root_only", "temporal_gnn", "transformer"):
+        rows.append(
+            {
+                "fold": 1,
+                "model": model,
+                "cohort": "test_all",
+                "mean_pr_auc": 0.2,
+                "minimum": 0.1,
+                "maximum": 0.3,
+                "prevalence": 0.05,
+            }
+        )
+
+    figure = plot_backtest_pr_auc(pd.DataFrame(rows))
+
+    centers = sorted(
+        patch.get_x() + patch.get_width() / 2 for patch in figure.axes[0].patches
+    )
+    assert np.mean(centers) == pytest.approx(0.0)
+    plt.close(figure)
 
 
 def test_backtest_window_figure_rejects_holdout_overlap():

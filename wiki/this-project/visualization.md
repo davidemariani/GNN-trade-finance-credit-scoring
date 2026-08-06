@@ -97,6 +97,11 @@ The applied notebooks now use a consistent set of tested teaching figures from `
   neural seed ranges. It then traces temporal attention from graph-constrained candidate events through
   query/key/value scoring, causal masking, softmax, and the weighted message, alongside first-principles
   explanations of time/relation encodings, multi-head attention, neighbour caps, padding, and fallback.
+  It also renders one anonymous real K=8 role/age mask and reports tensor shapes and memory cost.
+- notebook 08 connects the actual masked multi-head Transformer layers to their query/key/value equations,
+  plots validation-only epoch selection, renders a real anonymous relation-by-slot attention heatmap with
+  event ages, and compares all four model families over both folds. It distinguishes attention diagnostics
+  from causal explanation and records the Transformer's mixed five-seed result.
 
 Every graph legend maps color to node or relation semantics. Real-data network figures expose anonymous
 topology only: generic `C*`/`I*` labels replace business identifiers, and bounded ego views replace an
