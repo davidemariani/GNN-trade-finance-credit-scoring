@@ -86,9 +86,29 @@ The original residual uses `root + message`. The tested gate uses `root + g * me
 `g` in `[0, 1]` depends on the root representation and the occupied fraction of each relation's K slots.
 It raises fold-1 five-seed mean validation PR-AUC from 0.3016 to 0.4272 but lowers fold 2 from 0.0203 to
 0.0101. This large sign-reversing effect is evidence that coverage interacts with regime, not evidence
-for a generally superior gate. Residual fusion remains default; capacity/regularization is next. The
+for a generally superior gate. Residual fusion remains default; capacity/regularization became next. The
 control preserves PyTorch's random stream around dormant gate initialization so its historical training
 trajectory remains exact. Artifact: `results/temporal_transformer_fusion_ablation.csv`.
+
+### Capacity and regularization ablation
+
+A 2×2 validation design compares 64 versus 32 hidden units and current regularization (dropout 0.20,
+weight decay `1e-4`) versus a stronger bundle (0.35, `1e-3`). Fold 1 favours the current wide model at
+0.3016; the other means are 0.2911–0.2932. In fold 2, wide strong regularization averages 0.0279 versus
+0.0203, but a single 0.0941 seed drives the mean and its median is 0.0100. Compact variants fall to
+0.0073 and 0.0055. Neither reduced capacity nor the stronger bundle is promoted. The original wide
+configuration stays frozen; K became the final planned information-budget control. Artifact:
+`results/temporal_transformer_capacity_ablation.csv`.
+
+### Recent-event budget K
+
+K changes retained legal information and tensor memory without changing trainable parameter count. K=2,
+4, 8, and 16 use approximately 27.8, 55.7, 111.4, and 222.7 MiB at 12 event features. Fold 1 prefers
+short context: means fall from 0.3301 at K=2 to 0.2964 at K=16. Fold 2 needs more history: K=2 falls to
+0.0069 and K=8 leads at 0.0203; K=16 reaches 0.0175. At K=8, 31.3% of fold-1 and 43.8% of fold-2
+relation histories hit the cap, confirming that the later regime is denser. No K dominates both origins.
+K=8 remains the predeclared compromise and the component-ablation sequence stops. Artifacts:
+`results/temporal_transformer_k_ablation.csv` and `results/temporal_transformer_k_coverage.csv`.
 
 ## Related material
 

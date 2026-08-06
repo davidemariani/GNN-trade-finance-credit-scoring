@@ -627,11 +627,47 @@ def plot_paired_fusion_ablation(results: pd.DataFrame) -> Figure:
     )
 
 
+def plot_paired_capacity_ablation(results: pd.DataFrame) -> Figure:
+    """Compare the capacity/regularization factorial with paired seeds."""
+
+    return _plot_paired_validation_ablation(
+        results,
+        treatment="variant",
+        variants=(
+            "wide_current",
+            "wide_strong_reg",
+            "compact_current",
+            "compact_strong_reg",
+        ),
+        labels=(
+            "wide\ncurrent reg",
+            "wide\nstrong reg",
+            "compact\ncurrent reg",
+            "compact\nstrong reg",
+        ),
+        xlabel="capacity and regularization treatment",
+        title="Compact capacity does not improve validation stability",
+    )
+
+
+def plot_paired_k_ablation(results: pd.DataFrame) -> Figure:
+    """Compare recent-event information budgets with paired seeds."""
+
+    return _plot_paired_validation_ablation(
+        results,
+        treatment="max_events",
+        variants=(2, 4, 8, 16),
+        labels=("K=2", "K=4", "K=8", "K=16"),
+        xlabel="maximum recent events per relation",
+        title="The useful history budget changes across temporal regimes",
+    )
+
+
 def _plot_paired_validation_ablation(
     results: pd.DataFrame,
     *,
     treatment: str,
-    variants: tuple[str, ...],
+    variants: tuple[object, ...],
     labels: tuple[str, ...],
     xlabel: str,
     title: str,

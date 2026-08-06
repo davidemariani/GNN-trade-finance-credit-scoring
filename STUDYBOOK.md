@@ -54,10 +54,23 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 
 ## Decision log (most recent first — one line + why, link for detail)
 
+- **K exposes a regime-specific history budget; K=8 stays frozen (2026-08-06)**: K=2 leads fold 1 at
+  0.3301 but falls to 0.0069 in fold 2; K=8 leads fold 2 at 0.0203; K=16 uses about 222.7 MiB versus
+  K=8's 111.4 MiB without improving either mean. *Why*: no fixed K dominates, so choosing the sparse-fold
+  winner would be origin tuning. K=8 remains the predeclared compromise and the Transformer component
+  sequence closes without a robust promotion. → notebook 09,
+  `results/temporal_transformer_k_ablation.csv`
+- **Compact capacity and stronger regularization are not stable improvements (2026-08-06)**: a 2×2
+  validation experiment compares 64 versus 32 hidden units and current versus stronger dropout/weight
+  decay. The current wide model leads fold 1 at 0.3016; compact models fall to 0.2911–0.2932. Wide strong
+  regularization reaches 0.0279 in fold 2 only because one seed scores 0.0941; its median is 0.0100.
+  *Why*: neither factor improves both origins or most seeds, so the wide current model remains frozen and
+  K became the final planned control (completed in the next entry). → notebook 09,
+  `results/temporal_transformer_capacity_ablation.csv`
 - **Coverage gating has a large but regime-dependent effect (2026-08-06)**: a scalar gate conditioned on
   the current root state and four relation-coverage fractions raises fold-1 validation PR-AUC from 0.302
   to 0.427, but lowers fold 2 from 0.020 to 0.010. *Why*: the sign reversal is not a robust improvement;
-  residual fusion stays default and smaller capacity/stronger regularization is next. The implementation
+  residual fusion stays default and capacity/regularization is tested in the next entry. The implementation
   also preserves the RNG stream so a dormant gate cannot silently change control dropout masks. →
   notebook 09, `results/temporal_transformer_fusion_ablation.csv`
 - **Transformer time encoding is not the main bottleneck (2026-08-06)**: paired five-seed validation
@@ -252,8 +265,10 @@ still open), and graph construction, fixed-origin evaluation, EDA/topology, and 
 causal model comparisons are implemented, tested, and explained in ten applied notebooks. Phase 3.5 is
 complete, and the first Phase 3.6 causal p90 slice now compares fold-safe LightGBM with a four-channel
 temporal role GNN and a bounded temporal graph Transformer. Neither neural family wins robustly and
-cold-start remains unresolved. Time treatment is nearly tied and coverage gating reverses across origins;
-smaller Transformer capacity/stronger regularization is next, alongside foundations notebooks;
+cold-start remains unresolved. Time treatment is nearly tied, coverage gating reverses across origins,
+and compact/strongly regularized variants do not improve robustly. The K control also reverses across
+origins, completing the planned Transformer ablations without a replacement for the frozen default.
+Next return to the remaining temporal-GNN controls and foundations notebooks;
 impairment timestamp recovery remains open in parallel. The causal audit is in notebook 05 and the visual
 temporal-model derivation/results and comparison are in notebooks 06–09. See
 `specs/roadmap.md` for the full phased plan and `BACKLOG.md` for the ordered next tasks.

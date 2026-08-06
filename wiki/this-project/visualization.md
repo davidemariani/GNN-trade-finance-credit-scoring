@@ -106,6 +106,10 @@ The applied notebooks now use a consistent set of tested teaching figures from `
   repeats the four-family rolling comparison, and connects paired seeds across no-age, fixed-decay, and
   learned-time treatments so initialization variance remains visible rather than hidden by means. A
   second paired view shows that coverage gating's large fold-1 gain reverses in fold 2.
+  A third paired view shows the complete width/regularization factorial and a mean-plus-median table,
+  making the fold-2 strong-regularization outlier explicit.
+  A fourth paired view links K=2/4/8/16 seeds, followed by a coverage/memory table that makes K's
+  information and compute trade-off concrete.
 
 Every graph legend maps color to node or relation semantics. Real-data network figures expose anonymous
 topology only: generic `C*`/`I*` labels replace business identifiers, and bounded ego views replace an

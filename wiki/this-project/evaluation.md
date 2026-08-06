@@ -281,6 +281,18 @@ Fold 1 improves from 0.3016 to 0.4272 mean validation PR-AUC, while fold 2 falls
 Because the direction reverses, residual fusion remains the default and no development-test labels are
 consulted. Artifact: `results/temporal_transformer_fusion_ablation.csv`.
 
+The next paired validation control is a 2×2 width/regularization design. The 64-unit current model remains
+best in fold 1 (0.3016); 32-unit variants average 0.2911–0.2932. Wide strong regularization has a nominal
+fold-2 mean of 0.0279, but its median is 0.0100 and one 0.0941 seed drives the mean. Compact variants are
+weaker at 0.0073 and 0.0055. No treatment is promoted. Artifact:
+`results/temporal_transformer_capacity_ablation.csv`.
+
+The final Transformer control varies the causal recent-event budget K. Fold 1 favours K=2 (0.3301 mean)
+and declines as history grows; fold 2 collapses at K=2 (0.0069) and favours K=8 (0.0203). K=16 doubles
+K=8 tensor memory to about 222.7 MiB without improving either mean. Because no K dominates, the
+predeclared K=8 configuration remains frozen. Artifacts: `results/temporal_transformer_k_ablation.csv`
+and `results/temporal_transformer_k_coverage.csv`.
+
 Implementation: `src/graph_ml/data/temporal_graph.py`,
 `src/graph_ml/models/temporal_role_gnn.py`, and `src/graph_ml/training/temporal_gnn.py`; concept guide:
 `wiki/gnn-concepts/temporal-role-gnn.md`; executed studybook:

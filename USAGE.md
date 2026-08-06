@@ -103,6 +103,13 @@ architecture effects are not confused with initialization effects.
 The paired residual/coverage-gate runs are in
 `results/temporal_transformer_fusion_ablation.csv` and appear in the same notebook. The default remains
 residual fusion because the gate's improvement reverses across validation origins.
+The 40-run width/regularization factorial is
+`results/temporal_transformer_capacity_ablation.csv`. Notebook 09 displays means and medians so the one
+high fold-2 strong-regularization seed cannot masquerade as a stable architecture improvement.
+The K information-budget runs and their causal-history coverage/memory audit are
+`results/temporal_transformer_k_ablation.csv` and `results/temporal_transformer_k_coverage.csv`. K=8
+remains default because it leads the higher-support fold and was predeclared; K=2's sparse-fold gain does
+not generalize.
 
 ## Git / GitHub
 

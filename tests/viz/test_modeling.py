@@ -11,7 +11,9 @@ from graph_ml.viz import (
     plot_backtest_pr_auc,
     plot_embedding_projection,
     plot_expanding_backtest_windows,
+    plot_paired_capacity_ablation,
     plot_paired_fusion_ablation,
+    plot_paired_k_ablation,
     plot_paired_time_ablation,
     plot_score_distributions,
     plot_seed_variability,
@@ -232,6 +234,54 @@ def test_paired_fusion_ablation_uses_the_shared_seed_view():
 
     assert len(figure.axes[0].lines) == 3
     assert figure.axes[0].get_xlabel() == "root/message fusion"
+    plt.close(figure)
+
+
+def test_paired_capacity_ablation_shows_all_factorial_treatments():
+    variants = (
+        "wide_current",
+        "wide_strong_reg",
+        "compact_current",
+        "compact_strong_reg",
+    )
+    rows = [
+        {
+            "fold": 1,
+            "seed": seed,
+            "variant": variant,
+            "validation_pr_auc": 0.1 + offset / 100,
+        }
+        for seed in (7, 19)
+        for offset, variant in enumerate(variants)
+    ]
+
+    figure = plot_paired_capacity_ablation(pd.DataFrame(rows))
+
+    assert len(figure.axes[0].lines) == 3
+    assert len(figure.axes[0].get_xticklabels()) == 4
+    plt.close(figure)
+
+
+def test_paired_k_ablation_orders_information_budgets():
+    rows = [
+        {
+            "fold": 1,
+            "seed": seed,
+            "max_events": max_events,
+            "validation_pr_auc": 0.1 + max_events / 100,
+        }
+        for seed in (7, 19)
+        for max_events in (2, 4, 8, 16)
+    ]
+
+    figure = plot_paired_k_ablation(pd.DataFrame(rows))
+
+    assert [label.get_text() for label in figure.axes[0].get_xticklabels()] == [
+        "K=2",
+        "K=4",
+        "K=8",
+        "K=16",
+    ]
     plt.close(figure)
 
 

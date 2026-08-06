@@ -81,13 +81,18 @@ against the held-out test set.
         attention diagnostic are complete. It improves sparse fold-1 seen-company ranking but trails
         LightGBM and the fixed-decay GNN in denser fold 2, so it is retained as evidence rather than
         promoted. → `wiki/gnn-concepts/temporal-graph-transformers.md`, notebook 08.
-16. [ ] **Ablate temporal attention on validation folds** — the paired five-seed time treatment is
+16. [x] **Ablate temporal attention on validation folds** — the paired five-seed time treatment is
         complete: learned log-age, fixed 180-day attention decay, and no age are nearly tied, so time
         encoding is not the main bottleneck. Coverage-aware root/message fusion is also complete: it
-        improves fold 1 sharply but halves the fold-2 mean, so it is not promoted. Next test smaller
-        capacity/stronger regularization, then K. Do not consult the sealed final holdout. →
+        improves fold 1 sharply but halves the fold-2 mean, so it is not promoted. The 2×2 width and
+        regularization experiment is also complete: compact models are weaker, while strong regularization
+        has one fold-2 outlier rather than a stable gain. The K control is complete: K=2 helps only the
+        sparse fold and collapses fold 2; K=16 doubles memory without improving either mean. K=8 remains
+        the predeclared compromise. The sealed final holdout was not consulted. →
         `results/temporal_transformer_time_ablation.csv`,
-        `results/temporal_transformer_fusion_ablation.csv`, notebook 09.
+        `results/temporal_transformer_fusion_ablation.csv`,
+        `results/temporal_transformer_capacity_ablation.csv`,
+        `results/temporal_transformer_k_ablation.csv`, notebook 09.
 17. [ ] **Backfill foundations alongside the evidence** — message passing and over-smoothing first;
         GAT/GIN follow after the corrected evaluation contract and temporal ablations.
 

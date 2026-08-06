@@ -189,11 +189,14 @@ the test budget on more architecture tuning.
       on the development folds. The model, masks/fallback, rolling refit, five-seed results, and learned
       attention diagnostic are tested and explained in notebook 08. It helps sparse fold-1 seen rows but
       trails both leading models in fold 2, so it is not promoted. ✓
-- [ ] Run validation-only Transformer ablations: explicit decay versus learned time, smaller capacity and
+- [x] Run validation-only Transformer ablations: explicit decay versus learned time, smaller capacity and
       stronger regularization, K, and root/message fusion. The paired time ablation is complete and finds
       no stable gain: fixed/learned/no-age validation means are nearly tied. Coverage gating is also
-      complete; it improves fold 1 from 0.302 to 0.427 but harms fold 2 from 0.020 to 0.010. Smaller
-      capacity/stronger regularization is next; preserve five seeds and the sealed holdout. → notebook 09.
+      complete; it improves fold 1 from 0.302 to 0.427 but harms fold 2 from 0.020 to 0.010. The 2×2
+      capacity/regularization control is also negative: compact variants are weaker and strong
+      regularization is not seed-stable. K=2 helps only fold 1, K=8 leads fold 2, and K=16 doubles memory
+      without improving either mean. The original K=8 model remains frozen; the sealed holdout stayed
+      untouched. → notebook 09. ✓
 
 Detailed audit: `wiki/this-project/evaluation.md`; concept guide:
 `wiki/gnn-concepts/temporal-graphs.md`, `wiki/gnn-concepts/temporal-role-gnn.md`, and

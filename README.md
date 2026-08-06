@@ -82,5 +82,8 @@ Notebook `09_model_comparison_and_time_ablation.ipynb` separates the retrospecti
 p90 scoreboards, then shows that learned log-age, fixed 180-day decay, and no-age Transformer variants
 are nearly tied on paired validation seeds. Its follow-up coverage gate has a large sign-reversing
 effect—0.427 versus 0.302 in fold 1, but 0.010
-versus 0.020 in fold 2—so it is retained as an ablation rather than promoted. Capacity/regularization is
-next.
+versus 0.020 in fold 2—so it is retained as an ablation rather than promoted. A subsequent 2×2 experiment
+finds compact models weaker; stronger dropout/weight decay produces one fold-2 outlier, not a stable gain.
+The final K control finds a regime trade-off: K=2 improves the sparse fold but collapses the later fold,
+while K=16 doubles K=8 memory without improving either mean. The original wide, learned-time, residual,
+K=8 configuration remains frozen; the planned Transformer ablation sequence is complete.
