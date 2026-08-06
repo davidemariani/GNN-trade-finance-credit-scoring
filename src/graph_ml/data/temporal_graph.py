@@ -183,6 +183,42 @@ def build_temporal_event_sequences(
     return TemporalEventSequences(values, ages, valid, indices)
 
 
+def build_bounded_temporal_relation_context(
+    instruments: pd.DataFrame,
+    event_features: np.ndarray,
+    *,
+    max_events: int,
+    half_life_days: float = 180.0,
+) -> TemporalRelationContext:
+    """Aggregate only the newest K legal events while preserving full metadata.
+
+    The relation values use a decay-weighted mean over at most ``max_events``
+    strictly-prior events. Metadata retains the all-history count, newest-event
+    age, and presence flag so this is a controlled aggregation ablation rather
+    than a simultaneous change to the gate inputs.
+    """
+
+    if np.isnan(half_life_days) or half_life_days <= 0:
+        raise ValueError("half_life_days must be positive or infinity")
+    full = build_temporal_relation_context(
+        instruments, event_features, half_life_days=half_life_days
+    )
+    sequences = build_temporal_event_sequences(
+        instruments, event_features, max_events=max_events
+    )
+    weights = np.exp(-np.log(2.0) * sequences.age_days / half_life_days)
+    weights *= sequences.valid_mask
+    denominator = weights.sum(axis=2, keepdims=True)
+    numerator = (sequences.values * weights[..., None]).sum(axis=2)
+    values = np.divide(
+        numerator,
+        denominator,
+        out=np.zeros_like(numerator),
+        where=denominator > 0,
+    )
+    return TemporalRelationContext(values.astype(np.float32), full.metadata)
+
+
 def _fill_relation_sequences(
     query_entities: pd.Series,
     event_entities: pd.Series,

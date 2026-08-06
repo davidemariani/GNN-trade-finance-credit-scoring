@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from math import ceil
 import random
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -19,8 +20,15 @@ from graph_ml.baselines import (
     fit_point_in_time_encoder,
     transform_point_in_time_instruments,
 )
-from graph_ml.data import build_temporal_relation_context
-from graph_ml.evaluation import LabelAvailability, PointInTimeFold, compute_binary_metrics
+from graph_ml.data import (
+    build_bounded_temporal_relation_context,
+    build_temporal_relation_context,
+)
+from graph_ml.evaluation import (
+    LabelAvailability,
+    PointInTimeFold,
+    compute_binary_metrics,
+)
 from graph_ml.models import TemporalRoleGNN
 
 
@@ -38,6 +46,8 @@ class TemporalGNNTrainingConfig:
     minimum_improvement: float = 1e-4
     seed: int = 42
     use_relation_context: bool = True
+    relation_mode: Literal["separate", "shared"] = "separate"
+    max_recent_events: int | None = None
 
 
 @dataclass(frozen=True)
@@ -54,6 +64,7 @@ class TemporalGNNTrainingRun:
     parameter_count: int
     instrument_feature_names: tuple[str, ...]
     seed: int
+    max_recent_events: int | None
 
 
 def fit_temporal_role_gnn(
@@ -76,11 +87,12 @@ def fit_temporal_role_gnn(
     _require_both_classes(labels, refit_mask, "refit")
 
     search_encoder = fit_point_in_time_encoder(features, fold.train_mask)
-    search_values, _ = transform_point_in_time_instruments(
-        features, search_encoder
-    )
+    search_values, _ = transform_point_in_time_instruments(features, search_encoder)
     search_tensors = _temporal_tensors(
-        instruments, search_values, config.half_life_days
+        instruments,
+        search_values,
+        config.half_life_days,
+        config.max_recent_events,
     )
     search_model = _new_model(search_values.shape[1], config)
     optimizer = torch.optim.Adam(
@@ -122,7 +134,10 @@ def fit_temporal_role_gnn(
         features, final_encoder
     )
     final_tensors = _temporal_tensors(
-        instruments, final_values, config.half_life_days
+        instruments,
+        final_values,
+        config.half_life_days,
+        config.max_recent_events,
     )
     final_model = _new_model(final_values.shape[1], config)
     final_optimizer = torch.optim.Adam(
@@ -153,9 +168,12 @@ def fit_temporal_role_gnn(
         best_validation_pr_auc=float(best_pr_auc),
         search_train_losses=tuple(losses),
         search_validation_pr_aucs=tuple(validation_scores),
-        parameter_count=sum(parameter.numel() for parameter in final_model.parameters()),
+        parameter_count=sum(
+            parameter.numel() for parameter in final_model.parameters()
+        ),
         instrument_feature_names=final_feature_names,
         seed=config.seed,
+        max_recent_events=config.max_recent_events,
     )
 
 
@@ -184,9 +202,17 @@ def evaluate_temporal_gnn_run(
         rows.append(
             {
                 "model": (
-                    "temporal_role_gnn"
-                    if run.model.use_relation_context
-                    else "root_only_neural"
+                    "root_only_neural"
+                    if not run.model.use_relation_context
+                    else (
+                        f"temporal_role_gnn_recent_k{run.max_recent_events}"
+                        if run.max_recent_events is not None
+                        else (
+                            "temporal_role_gnn"
+                            if run.model.relation_mode == "separate"
+                            else "temporal_role_gnn_shared"
+                        )
+                    )
                 ),
                 "cohort": cohort,
                 "review_fraction": review_fraction,
@@ -197,10 +223,22 @@ def evaluate_temporal_gnn_run(
 
 
 def _temporal_tensors(
-    instruments: pd.DataFrame, values: np.ndarray, half_life_days: float
+    instruments: pd.DataFrame,
+    values: np.ndarray,
+    half_life_days: float,
+    max_recent_events: int | None,
 ) -> tuple[Tensor, Tensor, Tensor]:
-    context = build_temporal_relation_context(
-        instruments, values, half_life_days=half_life_days
+    context = (
+        build_temporal_relation_context(
+            instruments, values, half_life_days=half_life_days
+        )
+        if max_recent_events is None
+        else build_bounded_temporal_relation_context(
+            instruments,
+            values,
+            max_events=max_recent_events,
+            half_life_days=half_life_days,
+        )
     )
     return (
         torch.from_numpy(values.astype(np.float32)),
@@ -218,6 +256,7 @@ def _new_model(
         hidden_channels=config.hidden_channels,
         dropout=config.dropout,
         use_relation_context=config.use_relation_context,
+        relation_mode=config.relation_mode,
     ).cpu()
 
 
@@ -262,12 +301,18 @@ def _positive_weight(labels: Tensor) -> Tensor:
 
 def _require_both_classes(labels: Tensor, mask: Tensor, name: str) -> None:
     if mask.shape != labels.shape or torch.unique(labels[mask]).numel() != 2:
-        raise ValueError(f"Temporal {name} partition must align and contain both classes")
+        raise ValueError(
+            f"Temporal {name} partition must align and contain both classes"
+        )
 
 
 def _validate_config(config: TemporalGNNTrainingConfig) -> None:
-    if config.hidden_channels < 1 or config.half_life_days <= 0:
-        raise ValueError("Hidden channels and half-life must be positive")
+    if (
+        config.hidden_channels < 1
+        or np.isnan(config.half_life_days)
+        or config.half_life_days <= 0
+    ):
+        raise ValueError("Hidden channels and half-life must be positive or infinity")
     if not 0 <= config.dropout < 1:
         raise ValueError("dropout must be in [0, 1)")
     if config.learning_rate <= 0 or config.weight_decay < 0:
@@ -276,6 +321,10 @@ def _validate_config(config: TemporalGNNTrainingConfig) -> None:
         raise ValueError("max_epochs and patience must be positive")
     if config.minimum_improvement < 0:
         raise ValueError("minimum_improvement must be non-negative")
+    if config.relation_mode not in {"separate", "shared"}:
+        raise ValueError("relation_mode must be separate or shared")
+    if config.max_recent_events is not None and config.max_recent_events < 1:
+        raise ValueError("max_recent_events must be positive when provided")
 
 
 def _seed_everything(seed: int) -> None:

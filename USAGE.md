@@ -50,11 +50,13 @@ jupyter lab notebooks/
 
 See `specs/instructions/notebook-standards.md` before adding a new notebook.
 
-The executed applied notebooks are ordered `00` through `09`; notebook `05` begins the point-in-time
+The executed applied notebooks are ordered `00` through `10`; notebook `05` begins the point-in-time
 remediation with label clocks, causal histories, and the bond audit, while notebook `06` derives and
 evaluates the temporal role GNN, and notebook `07` introduces pre-holdout temporal backtesting and the
 temporal graph Transformer decision, and notebook `08` fits, diagnoses, and evaluates that candidate.
 Notebook `09` gives the cross-model comparison and paired validation-only time-encoding ablation.
+Notebook `10` verifies the temporal GNN's empty-history fallback and compares relation sharing, recency
+priors, and bounded recent-neighbour aggregation using paired validation seeds.
 The static GraphSAGE architecture derivation lives
 in `notebooks/01_architectures/graphsage.ipynb`; the real-data comparison is
 `notebooks/02_project/04_hetero_graphsage.ipynb`. Both require Graphviz only when re-rendering the traced
@@ -110,6 +112,11 @@ The K information-budget runs and their causal-history coverage/memory audit are
 `results/temporal_transformer_k_ablation.csv` and `results/temporal_transformer_k_coverage.csv`. K=8
 remains default because it leads the higher-support fold and was predeclared; K=2's sparse-fold gain does
 not generalize.
+
+Temporal GNN ablation artifacts are `results/temporal_gnn_relation_ablation.csv`,
+`results/temporal_gnn_decay_ablation.csv`, and `results/temporal_gnn_recent_ablation.csv`. The bounded
+context builder preserves full-history gate metadata while replacing only the relation feature mean with
+the newest K legal events.
 
 ## Git / GitHub
 

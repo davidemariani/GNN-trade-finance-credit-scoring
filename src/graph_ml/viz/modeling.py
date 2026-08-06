@@ -663,6 +663,45 @@ def plot_paired_k_ablation(results: pd.DataFrame) -> Figure:
     )
 
 
+def plot_paired_relation_ablation(results: pd.DataFrame) -> Figure:
+    """Compare role-specific and shared temporal GNN transforms."""
+
+    return _plot_paired_validation_ablation(
+        results,
+        treatment="relation_mode",
+        variants=("separate", "shared"),
+        labels=("role-specific", "shared transform"),
+        xlabel="relation parameterization",
+        title="Relation sharing trades fold-1 mean for fold-2 stability",
+    )
+
+
+def plot_paired_decay_ablation(results: pd.DataFrame) -> Figure:
+    """Compare temporal GNN recency priors with paired seeds."""
+
+    return _plot_paired_validation_ablation(
+        results,
+        treatment="decay",
+        variants=("short_60d", "current_180d", "long_365d", "no_decay"),
+        labels=("60d", "180d", "365d", "no decay"),
+        xlabel="history half-life",
+        title="The useful recency prior changes across temporal regimes",
+    )
+
+
+def plot_paired_recent_ablation(results: pd.DataFrame) -> Figure:
+    """Compare all-history and bounded recent temporal GNN aggregation."""
+
+    return _plot_paired_validation_ablation(
+        results,
+        treatment="aggregation",
+        variants=("all_history", "recent_k8"),
+        labels=("all legal history", "newest K=8"),
+        xlabel="relation aggregation budget",
+        title="Recent K=8 improves typical seeds but changes the extremes",
+    )
+
+
 def _plot_paired_validation_ablation(
     results: pd.DataFrame,
     *,

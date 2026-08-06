@@ -80,8 +80,12 @@ state is preferable to a recurrent memory model. It is a good causal intermediat
 GraphSAGE graph and a TGN/TGAT-style event model. It does not yet learn event-to-event attention, recurrent
 company memory, or long hybrid-mediated contagion paths.
 
-Next experiments should be chosen on validation folds: root-only control, relation collapse, no-decay
-and predeclared half-lives, recent-neighbour attention/sampling, and cold-start feature improvements.
+The planned validation-only component sequence is complete. Fully empty history is proven to contribute
+an exact zero message. Sharing relation transforms lowers parameter count and improves fold-2 stability,
+but lowers fold-1 mean. Short 60-day decay leads fold 1, whereas no decay leads fold 2; the predeclared
+180-day prior remains the compromise. Bounded recent K=8 improves both fold medians and sharply reduces
+fold-2 variance, but not both means, so it awaits additional temporal origins rather than replacing the
+frozen model. See notebook 10 and `results/temporal_gnn_*_ablation.csv`.
 Repeatedly choosing changes from the reported test period would invalidate the comparison.
 
 ## Implementation pointers

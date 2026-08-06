@@ -48,7 +48,9 @@ _POST_ORIGINATION_COLUMNS = frozenset(
 _OUTCOME_AGGREGATE = re.compile(
     r"^(?:cd|d|c)_(?:repaid|impaired1|pastdue(?:30|90|180)?|pd_mismatch|we_payment_share)(?:_|$)"
 )
-_BOND_GRAPH = re.compile(r"^(?:imp|p90|p180)_(?:edge|d_node|c_node|node|energy)|^flow_shock_")
+_BOND_GRAPH = re.compile(
+    r"^(?:imp|p90|p180)_(?:edge|d_node|c_node|node|energy)|^flow_shock_"
+)
 
 
 @dataclass(frozen=True)
@@ -89,7 +91,9 @@ def audit_point_in_time_columns(columns: Iterable[str]) -> FeatureLeakageAudit:
 
     names = tuple(dict.fromkeys(str(column) for column in columns))
     return FeatureLeakageAudit(
-        final_state=tuple(sorted(name for name in names if name in _FINAL_STATE_COLUMNS)),
+        final_state=tuple(
+            sorted(name for name in names if name in _FINAL_STATE_COLUMNS)
+        ),
         post_origination=tuple(
             sorted(
                 name
@@ -148,7 +152,9 @@ def build_strictly_prior_histories(
         raise ValueError(f"History value columns must be numeric: {bad}")
 
     working = numeric.copy()
-    working["__entity"] = events[entity_column].map(canonicalize_company_name).to_numpy()
+    working["__entity"] = (
+        events[entity_column].map(canonicalize_company_name).to_numpy()
+    )
     working["__timestamp"] = timestamps.to_numpy()
     working["__row"] = np.arange(len(events), dtype=np.int64)
 
@@ -243,9 +249,9 @@ def query_strictly_prior_histories(
         raise ValueError(f"History value columns must be numeric: {bad}")
 
     working = numeric.copy()
-    working["__entity"] = events[event_entity_column].map(
-        canonicalize_company_name
-    ).to_numpy()
+    working["__entity"] = (
+        events[event_entity_column].map(canonicalize_company_name).to_numpy()
+    )
     working["__timestamp"] = event_times.to_numpy()
     grouped = working.groupby(["__entity", "__timestamp"], sort=True, observed=True)
     bucket_size = grouped.size().rename("__size")
@@ -257,12 +263,15 @@ def query_strictly_prior_histories(
         "__size"
     ].cumsum()
     for column in value_columns:
-        aggregate[f"{column}__cum_sum"] = aggregate[f"{column}__sum"].fillna(0).groupby(
-            aggregate["__entity"], sort=False
-        ).cumsum()
-        aggregate[f"{column}__cum_valid"] = aggregate.groupby(
-            "__entity", sort=False
-        )[f"{column}__valid"].cumsum()
+        aggregate[f"{column}__cum_sum"] = (
+            aggregate[f"{column}__sum"]
+            .fillna(0)
+            .groupby(aggregate["__entity"], sort=False)
+            .cumsum()
+        )
+        aggregate[f"{column}__cum_valid"] = aggregate.groupby("__entity", sort=False)[
+            f"{column}__valid"
+        ].cumsum()
 
     query_keys = query_entities.map(canonicalize_company_name).to_numpy()
     output = pd.DataFrame(
@@ -291,9 +300,9 @@ def query_strictly_prior_histories(
             continue
         query_positions = np.asarray(positions, dtype=np.int64)[has_history]
         selected = history.iloc[prior_positions[has_history]]
-        output.iloc[query_positions, output.columns.get_loc("history_count")] = selected[
-            "__cum_count"
-        ].to_numpy(dtype=np.int64)
+        output.iloc[query_positions, output.columns.get_loc("history_count")] = (
+            selected["__cum_count"].to_numpy(dtype=np.int64)
+        )
         for column in value_columns:
             valid = selected[f"{column}__cum_valid"].to_numpy(dtype=np.int64)
             sums = selected[f"{column}__cum_sum"].to_numpy(dtype=np.float64)
@@ -322,13 +331,14 @@ def query_time_decayed_histories(
 ) -> pd.DataFrame:
     """Query strictly-prior histories with exponential recency weighting.
 
-    An event's relative weight halves every ``half_life_days``. The common
+    An event's relative weight halves every ``half_life_days``. Passing positive
+    infinity gives an exact unweighted mean for the no-decay ablation. The common
     query-time factor cancels from weighted means, allowing exact prefix sums
     without materializing every historical neighbor for every query.
     """
 
-    if half_life_days <= 0:
-        raise ValueError("half_life_days must be positive")
+    if np.isnan(half_life_days) or half_life_days <= 0:
+        raise ValueError("half_life_days must be positive or infinity")
     value_columns = tuple(dict.fromkeys(value_columns))
     required = {event_entity_column, event_timestamp_column, *value_columns}
     missing = sorted(required - set(events.columns))
@@ -358,9 +368,9 @@ def query_time_decayed_histories(
         raise ValueError(f"History value columns must be numeric: {bad}")
 
     working = numeric.copy()
-    working["__entity"] = events[event_entity_column].map(
-        canonicalize_company_name
-    ).to_numpy()
+    working["__entity"] = (
+        events[event_entity_column].map(canonicalize_company_name).to_numpy()
+    )
     working["__timestamp"] = event_times.to_numpy()
     grouped = working.groupby(["__entity", "__timestamp"], sort=True, observed=True)
     size = grouped.size().rename("__size")
@@ -414,16 +424,14 @@ def query_time_decayed_histories(
             continue
         query_positions = np.asarray(positions, dtype=np.int64)[has_history]
         selected = history.iloc[prior[has_history]]
-        output.iloc[query_positions, output.columns.get_loc("history_count")] = selected[
-            "__cum_count"
-        ].to_numpy(dtype=np.int64)
+        output.iloc[query_positions, output.columns.get_loc("history_count")] = (
+            selected["__cum_count"].to_numpy(dtype=np.int64)
+        )
         ages = (
             query_times.iloc[query_positions].to_numpy(dtype="datetime64[ns]")
             - selected["__timestamp"].to_numpy(dtype="datetime64[ns]")
         ) / np.timedelta64(1, "D")
-        output.iloc[
-            query_positions, output.columns.get_loc("history_age_days")
-        ] = ages
+        output.iloc[query_positions, output.columns.get_loc("history_age_days")] = ages
         for column in value_columns:
             numerator = selected[f"{column}__cum_weighted_sum"].to_numpy(float)
             denominator = selected[f"{column}__cum_weighted_valid"].to_numpy(float)

@@ -12,7 +12,7 @@ here. If this file starts to mirror the roadmap, prune it back.
 
 _(nothing actively in progress — next action is the top of "Next up")_
 
-## Next up — validate temporal components without reusing the test period
+## Next up — consolidate temporal evidence and resume foundations
 
 The first vertical slice is complete. These are the next evidence-building steps, not permission to tune
 against the held-out test set.
@@ -61,10 +61,13 @@ against the held-out test set.
         180-day recency decay, learned count/age gates, rolling epoch selection, refit, and five deterministic
         seeds. Mean p90 PR-AUC is 0.053 overall versus LightGBM's 0.079; cold-start remains near prevalence.
         → `wiki/gnn-concepts/temporal-role-gnn.md`, notebook 06.
-12. [ ] **Run validation-only temporal component ablations** — the root-only control is complete: relation
-        messages improve overall/seen means but hurt cold-start. Next improve empty-history fallback/gating,
-        then test relation collapse, no-decay/predeclared half-lives, and recent-neighbour handling for hubs. Choose changes on
-        rolling validation, not the already reported test period; report multiple seeds for neural models.
+12. [x] **Run validation-only temporal component ablations** — exact empty-history fallback is verified.
+        Shared relation transforms trade fold-1 mean for higher fold-2 mean/stability; 60-day and no-decay
+        priors win different origins. Recent K=8 improves both medians and fold-2 stability but not both
+        means, so it remains the leading additional-origin candidate rather than replacing the frozen
+        all-history model. The reported test period stayed sealed. → notebook 10,
+        `results/temporal_gnn_relation_ablation.csv`, `results/temporal_gnn_decay_ablation.csv`, and
+        `results/temporal_gnn_recent_ablation.csv`.
 13. [x] **Add multiple rolling test windows** — two twelve-month pre-holdout folds now enforce minimum
         class support and show that prevalence, model ordering, and seed variance change materially over
         time. → `results/temporal_backtest_p90_summary.csv`, notebook 07.

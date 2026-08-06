@@ -54,6 +54,17 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 
 ## Decision log (most recent first — one line + why, link for detail)
 
+- **Recent K=8 is the leading temporal-GNN future-origin candidate, not a promotion (2026-08-06)**:
+  bounding each relation mean to its newest eight legal events raises fold medians from 0.1406/0.0084 to
+  0.1520/0.0123 and lowers fold-2 SD from 0.0168 to 0.0048, but fold-2 mean falls from 0.0143 to 0.0109.
+  *Why*: typical-seed stability improves, yet two origins and mixed means are insufficient to replace the
+  frozen all-history model. → notebook 10, `results/temporal_gnn_recent_ablation.csv`
+- **Temporal-GNN relation and decay preferences reverse across origins (2026-08-06)**: shared transforms
+  reduce parameters and improve fold-2 mean/stability but lower fold-1 mean; 60-day decay leads fold 1,
+  while no decay leads fold 2. Exact empty-history root fallback is verified. *Why*: the information clock
+  is correct, but recency and role complexity are regime-dependent; retain predeclared separate relations
+  and 180 days. → notebook 10, `results/temporal_gnn_relation_ablation.csv`,
+  `results/temporal_gnn_decay_ablation.csv`
 - **K exposes a regime-specific history budget; K=8 stays frozen (2026-08-06)**: K=2 leads fold 1 at
   0.3301 but falls to 0.0069 in fold 2; K=8 leads fold 2 at 0.0203; K=16 uses about 222.7 MiB versus
   K=8's 111.4 MiB without improving either mean. *Why*: no fixed K dominates, so choosing the sparse-fold
@@ -262,13 +273,14 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 
 Planning/design is done (Phases 0-1 + the design decisions), the data is converted to Parquet (backup
 still open), and graph construction, fixed-origin evaluation, EDA/topology, and both retrospective and
-causal model comparisons are implemented, tested, and explained in ten applied notebooks. Phase 3.5 is
+causal model comparisons are implemented, tested, and explained in eleven applied notebooks. Phase 3.5 is
 complete, and the first Phase 3.6 causal p90 slice now compares fold-safe LightGBM with a four-channel
 temporal role GNN and a bounded temporal graph Transformer. Neither neural family wins robustly and
 cold-start remains unresolved. Time treatment is nearly tied, coverage gating reverses across origins,
 and compact/strongly regularized variants do not improve robustly. The K control also reverses across
 origins, completing the planned Transformer ablations without a replacement for the frozen default.
-Next return to the remaining temporal-GNN controls and foundations notebooks;
+The planned temporal-GNN controls are now also complete; recent K=8 awaits more origins rather than
+holdout evaluation. Next consolidate the evidence and resume foundations notebooks;
 impairment timestamp recovery remains open in parallel. The causal audit is in notebook 05 and the visual
 temporal-model derivation/results and comparison are in notebooks 06–09. See
 `specs/roadmap.md` for the full phased plan and `BACKLOG.md` for the ordered next tasks.

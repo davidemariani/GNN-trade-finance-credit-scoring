@@ -176,9 +176,10 @@ the test budget on more architecture tuning.
 - [x] Create a visual studybook showing an event timeline, legal/illegal messages, rolling folds, causal
       context updates, and the temporal-vs-tabular comparison. Notebook 06 explains the model from first
       principles and visualizes seed instability. ✓
-- [ ] Run temporal component ablations chosen on validation folds: root-only control, relation collapse,
-      no-decay/predeclared half-lives, and hub-aware recent-neighbour aggregation. Root-only is complete:
-      relation contexts improve overall/seen means but hurt cold-start; remaining ablations stay open.
+- [x] Run temporal component ablations chosen on validation folds: root-only control, relation sharing,
+      no-decay/predeclared half-lives, and hub-aware recent-neighbour aggregation. Empty history is an
+      exact root fallback; relation and decay preferences reverse across origins. Recent K=8 improves both
+      medians and fold-2 stability but not both means, so it awaits more origins. → notebook 10. ✓
 - [x] Add pre-holdout expanding-window backtests with minimum class support. Two twelve-month folds now
       show time-varying prevalence/model ordering and provide the selection environment for architecture
       changes without reusing the reported final holdout. ✓

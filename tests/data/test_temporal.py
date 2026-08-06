@@ -134,6 +134,28 @@ def test_time_decay_weights_recent_events_more_and_keeps_strict_order():
     assert history.loc[1, "history_decay_mean__value"] == pytest.approx(20 / 3)
 
 
+def test_infinite_half_life_is_exact_no_decay_mean():
+    events = pd.DataFrame(
+        {
+            "company": ["A", "A"],
+            "time": pd.to_datetime(["2020-01-01", "2020-01-11"]),
+            "value": [0.0, 10.0],
+        }
+    )
+
+    history = query_time_decayed_histories(
+        events,
+        event_entity_column="company",
+        event_timestamp_column="time",
+        value_columns=("value",),
+        query_entities=pd.Series(["A"]),
+        query_timestamps=pd.Series(pd.to_datetime(["2020-01-21"])),
+        half_life_days=float("inf"),
+    )
+
+    assert history.loc[0, "history_decay_mean__value"] == 5.0
+
+
 def test_schema_audit_flags_outcomes_lifecycle_aggregates_and_bond_features():
     audit = audit_point_in_time_columns(
         [

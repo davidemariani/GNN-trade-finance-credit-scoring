@@ -110,6 +110,9 @@ The applied notebooks now use a consistent set of tested teaching figures from `
   making the fold-2 strong-regularization outlier explicit.
   A fourth paired view links K=2/4/8/16 seeds, followed by a coverage/memory table that makes K's
   information and compute trade-off concrete.
+- notebook 10 revisits the temporal role GNN, proves its empty-history root fallback algebraically, compares
+  role-specific versus shared transforms, draws 60/180/365-day decay curves, and connects paired seeds for
+  relation, decay, and recent-K=8 controls. Means, medians, and ranges stay visible together.
 
 Every graph legend maps color to node or relation semantics. Real-data network figures expose anonymous
 topology only: generic `C*`/`I*` labels replace business identifiers, and bounded ego views replace an

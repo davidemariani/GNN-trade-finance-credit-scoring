@@ -101,3 +101,50 @@ def test_root_only_training_run_is_labeled_as_control():
     )
 
     assert metrics["model"].item() == "root_only_neural"
+
+
+def test_shared_relation_training_run_has_distinct_label():
+    frame, availability, fold = _setup()
+    run = fit_temporal_role_gnn(
+        frame,
+        build_point_in_time_feature_frame(frame),
+        availability,
+        fold,
+        TemporalGNNTrainingConfig(
+            hidden_channels=4,
+            dropout=0,
+            max_epochs=2,
+            patience=2,
+            relation_mode="shared",
+        ),
+    )
+
+    metrics = evaluate_temporal_gnn_run(
+        run, availability, {"test": fold.test_mask}, review_fraction=0.5
+    )
+
+    assert metrics["model"].item() == "temporal_role_gnn_shared"
+
+
+def test_recent_event_training_run_has_distinct_label():
+    frame, availability, fold = _setup()
+    run = fit_temporal_role_gnn(
+        frame,
+        build_point_in_time_feature_frame(frame),
+        availability,
+        fold,
+        TemporalGNNTrainingConfig(
+            hidden_channels=4,
+            dropout=0,
+            max_epochs=2,
+            patience=2,
+            max_recent_events=2,
+        ),
+    )
+
+    metrics = evaluate_temporal_gnn_run(
+        run, availability, {"test": fold.test_mask}, review_fraction=0.5
+    )
+
+    assert run.max_recent_events == 2
+    assert metrics["model"].item() == "temporal_role_gnn_recent_k2"

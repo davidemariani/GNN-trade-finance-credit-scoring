@@ -208,9 +208,17 @@ LightGBM overall and seen, is initialization-sensitive, and leaves cold-start al
 prevalence. Four of five seeds retrieve no cold-start positives within the top 5% review budget.
 
 This comparison closes the first causal temporal slice without establishing robust superiority. It also
-narrows the next experiments: root-only control, relation collapse, no-decay/predeclared half-lives,
-recent-neighbour attention or sampling for hubs, and better transferable current/company features for
-cold-start. Those choices must use validation folds while the reported 2018 test period remains sealed.
+motivated validation-only root, relation, decay, and recent-neighbour controls while the reported 2018
+test period remained sealed. Those controls are now complete; none dominates both origins. Better
+transferable current/company features for cold-start remain a separate direction.
+
+The temporal role GNN ablations verify exact zero-message empty fallback. Shared relation transforms have
+fold means 0.1374/0.0195 versus separate 0.1436/0.0143. A 60-day half-life leads fold 1 at 0.1699, while
+no decay leads fold 2 at 0.0258. Recent K=8 raises both medians (0.1406→0.1520 and 0.0084→0.0123) and
+reduces fold-2 SD (0.0168→0.0048), but lowers its mean from 0.0143 to 0.0109. It remains an
+additional-origin candidate. Artifacts: `results/temporal_gnn_relation_ablation.csv`,
+`results/temporal_gnn_decay_ablation.csv`, `results/temporal_gnn_recent_ablation.csv`;
+studybook: `notebooks/02_project/10_temporal_gnn_component_ablations.ipynb`.
 Multiple rolling test windows are still future work; the current result is one fixed-origin held-out
 period, evaluated across multiple neural initializations.
 

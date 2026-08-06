@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 import torch
 from torch import Tensor, nn
 
@@ -24,29 +26,34 @@ class TemporalRoleGNN(nn.Module):
         hidden_channels: int = 64,
         dropout: float = 0.2,
         use_relation_context: bool = True,
+        relation_mode: Literal["separate", "shared"] = "separate",
     ) -> None:
         super().__init__()
         if instrument_channels < 1 or hidden_channels < 1:
             raise ValueError("Channel counts must be positive")
         if not 0 <= dropout < 1:
             raise ValueError("dropout must be in [0, 1)")
+        if relation_mode not in {"separate", "shared"}:
+            raise ValueError("relation_mode must be separate or shared")
         self.instrument_channels = instrument_channels
         self.use_relation_context = use_relation_context
+        self.relation_mode = relation_mode
+        relation_layer_count = (
+            len(TEMPORAL_RELATIONS)
+            if use_relation_context and relation_mode == "separate"
+            else int(use_relation_context)
+        )
         self.root = nn.Linear(instrument_channels, hidden_channels)
         self.relation_messages = nn.ModuleList(
             nn.Linear(instrument_channels, hidden_channels, bias=False)
-            for _ in TEMPORAL_RELATIONS
-            if use_relation_context
+            for _ in range(relation_layer_count)
         )
         self.temporal_messages = nn.ModuleList(
             nn.Linear(3, hidden_channels, bias=False)
-            for _ in TEMPORAL_RELATIONS
-            if use_relation_context
+            for _ in range(relation_layer_count)
         )
         self.temporal_gates = nn.ModuleList(
-            nn.Linear(3, hidden_channels)
-            for _ in TEMPORAL_RELATIONS
-            if use_relation_context
+            nn.Linear(3, hidden_channels) for _ in range(relation_layer_count)
         )
         self.normalization = nn.LayerNorm(hidden_channels)
         self.refinement = nn.Linear(hidden_channels, hidden_channels)
@@ -61,22 +68,19 @@ class TemporalRoleGNN(nn.Module):
 
         self._validate_inputs(instrument_features, context, metadata)
         hidden = self.root(instrument_features)
-        for relation, (message_layer, time_layer, gate_layer) in enumerate(
-            zip(
-                self.relation_messages,
-                self.temporal_messages,
-                self.temporal_gates,
-                strict=True,
-            )
-        ):
+        for relation in range(len(TEMPORAL_RELATIONS)):
+            if not self.use_relation_context:
+                break
+            layer = relation if self.relation_mode == "separate" else 0
+            message_layer = self.relation_messages[layer]
+            time_layer = self.temporal_messages[layer]
+            gate_layer = self.temporal_gates[layer]
             temporal = metadata[:, relation]
             message = message_layer(context[:, relation]) + time_layer(temporal)
             hidden = hidden + torch.sigmoid(gate_layer(temporal)) * message
         hidden = self.dropout(torch.relu(self.normalization(hidden)))
         refined = self.refinement(hidden)
-        return self.dropout(
-            torch.relu(self.refinement_normalization(refined + hidden))
-        )
+        return self.dropout(torch.relu(self.refinement_normalization(refined + hidden)))
 
     def forward(
         self, instrument_features: Tensor, context: Tensor, metadata: Tensor

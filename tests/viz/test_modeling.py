@@ -12,8 +12,11 @@ from graph_ml.viz import (
     plot_embedding_projection,
     plot_expanding_backtest_windows,
     plot_paired_capacity_ablation,
+    plot_paired_decay_ablation,
     plot_paired_fusion_ablation,
     plot_paired_k_ablation,
+    plot_paired_relation_ablation,
+    plot_paired_recent_ablation,
     plot_paired_time_ablation,
     plot_score_distributions,
     plot_seed_variability,
@@ -282,6 +285,41 @@ def test_paired_k_ablation_orders_information_budgets():
         "K=8",
         "K=16",
     ]
+    plt.close(figure)
+
+
+@pytest.mark.parametrize(
+    ("plotter", "column", "variants"),
+    [
+        (plot_paired_relation_ablation, "relation_mode", ("separate", "shared")),
+        (
+            plot_paired_recent_ablation,
+            "aggregation",
+            ("all_history", "recent_k8"),
+        ),
+        (
+            plot_paired_decay_ablation,
+            "decay",
+            ("short_60d", "current_180d", "long_365d", "no_decay"),
+        ),
+    ],
+)
+def test_temporal_gnn_ablation_plots_pair_seeds(plotter, column, variants):
+    rows = [
+        {
+            "fold": 1,
+            "seed": seed,
+            column: variant,
+            "validation_pr_auc": 0.1 + offset / 100,
+        }
+        for seed in (7, 19)
+        for offset, variant in enumerate(variants)
+    ]
+
+    figure = plotter(pd.DataFrame(rows))
+
+    assert len(figure.axes[0].lines) == 3
+    assert len(figure.axes[0].get_xticklabels()) == len(variants)
     plt.close(figure)
 
 

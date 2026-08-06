@@ -32,6 +32,38 @@ def test_relation_channels_have_independent_parameters():
     )
 
 
+def test_shared_relation_model_is_invariant_to_role_permutation():
+    model = TemporalRoleGNN(3, hidden_channels=4, dropout=0, relation_mode="shared")
+    model.eval()
+    features = torch.randn(5, 3)
+    context = torch.randn(5, 4, 3)
+    metadata = torch.randn(5, 4, 3)
+    permutation = torch.tensor([2, 0, 3, 1])
+
+    original = model(features, context, metadata)
+    permuted = model(features, context[:, permutation], metadata[:, permutation])
+
+    torch.testing.assert_close(original, permuted)
+    assert len(model.relation_messages) == 1
+
+
+def test_empty_history_has_exact_zero_message_fallback():
+    model = TemporalRoleGNN(3, hidden_channels=4, dropout=0)
+    model.eval()
+    features = torch.randn(5, 3)
+    empty_context = torch.zeros(5, 4, 3)
+    empty_metadata = torch.zeros(5, 4, 3)
+
+    encoded = model.encode(features, empty_context, empty_metadata)
+    root = model.root(features)
+    hidden = torch.relu(model.normalization(root))
+    expected = torch.relu(
+        model.refinement_normalization(model.refinement(hidden) + hidden)
+    )
+
+    torch.testing.assert_close(encoded, expected)
+
+
 @pytest.mark.parametrize(
     ("context_shape", "metadata_shape", "message"),
     [

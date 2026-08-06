@@ -5,9 +5,37 @@ import pandas as pd
 
 from graph_ml.data import (
     TEMPORAL_RELATIONS,
+    build_bounded_temporal_relation_context,
     build_temporal_event_sequences,
     build_temporal_relation_context,
 )
+
+
+def test_bounded_context_changes_values_but_preserves_full_history_metadata():
+    frame = pd.DataFrame(
+        {
+            "customer_name_1": ["A", "A", "A"],
+            "debtor_name_1": ["B", "C", "D"],
+            "invoice_date": pd.to_datetime(["2020-01-01", "2020-01-02", "2020-01-03"]),
+        }
+    )
+    features = np.array([[1.0], [2.0], [3.0]])
+    full = build_temporal_relation_context(frame, features, half_life_days=10)
+
+    bounded = build_bounded_temporal_relation_context(
+        frame, features, max_events=1, half_life_days=10
+    )
+
+    assert bounded.values[2, 0, 0] == 2.0
+    assert full.values[2, 0, 0] != bounded.values[2, 0, 0]
+    np.testing.assert_array_equal(bounded.metadata, full.metadata)
+
+    changed = features.copy()
+    changed[2] = 1_000_000
+    rebuilt = build_bounded_temporal_relation_context(
+        frame, changed, max_events=1, half_life_days=10
+    )
+    np.testing.assert_allclose(bounded.values[:2], rebuilt.values[:2])
 
 
 def test_temporal_context_is_typed_strict_and_future_invariant():

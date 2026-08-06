@@ -87,3 +87,9 @@ finds compact models weaker; stronger dropout/weight decay produces one fold-2 o
 The final K control finds a regime trade-off: K=2 improves the sparse fold but collapses the later fold,
 while K=16 doubles K=8 memory without improving either mean. The original wide, learned-time, residual,
 K=8 configuration remains frozen; the planned Transformer ablation sequence is complete.
+
+The fixed-decay temporal role GNN component sequence is also complete. Shared relation transforms and
+60/180/365-day/no-decay priors do not dominate both validation origins. Bounded recent K=8 aggregation
+improves both medians and sharply reduces fold-2 seed spread, but not both means; it remains a candidate
+for additional origins rather than replacing the reported all-history model. The derivation and paired
+visual evidence are in `notebooks/02_project/10_temporal_gnn_component_ablations.ipynb`.

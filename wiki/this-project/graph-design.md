@@ -206,6 +206,10 @@ As of 2026-08-06 that representation and its first attention model are implement
 indices (`-1` for padding). Strict-left timestamp search excludes the current and all simultaneous events;
 K truncates only after causal eligibility. K=8 uses about 111 MiB for the current 59,820 × 4 × 8 × 12
 feature artifact. Hand-built tests change future features and verify earlier tensors remain identical.
+The same bounded tensor now supports a controlled temporal-GNN recent-neighbour aggregator. Only the
+relation feature mean is restricted to newest K=8 legal events; full-history count, newest age, and
+presence metadata remain unchanged. This prevents the hub experiment from silently changing the gate's
+definition of company history.
 The 39,745-parameter Transformer uses learned log-age and relation encodings, four-head masked attention,
 an exact empty-history fallback, and a residual root path. Five-seed development results do not establish
 a win: it helps sparse fold-1 seen rows but trails LightGBM and fixed decay in fold 2. Notebook 08 shows

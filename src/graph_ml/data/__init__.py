@@ -19,6 +19,7 @@ from graph_ml.data.temporal_graph import (
     TEMPORAL_RELATIONS,
     TemporalEventSequences,
     TemporalRelationContext,
+    build_bounded_temporal_relation_context,
     build_temporal_event_sequences,
     build_temporal_relation_context,
 )
@@ -30,6 +31,7 @@ __all__ = [
     "TEMPORAL_RELATIONS",
     "TemporalEventSequences",
     "TemporalRelationContext",
+    "build_bounded_temporal_relation_context",
     "FeatureLeakageAudit",
     "audit_point_in_time_columns",
     "build_strictly_prior_histories",
