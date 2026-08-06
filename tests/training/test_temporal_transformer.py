@@ -54,6 +54,9 @@ def test_transformer_selects_refits_scores_and_evaluates():
             max_epochs=2,
             patience=2,
             seed=3,
+            time_encoding="fixed_decay",
+            fixed_half_life_days=30,
+            fusion="coverage_gate",
         ),
     )
     metrics = evaluate_temporal_transformer_run(

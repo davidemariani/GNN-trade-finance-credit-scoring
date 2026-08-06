@@ -50,10 +50,11 @@ jupyter lab notebooks/
 
 See `specs/instructions/notebook-standards.md` before adding a new notebook.
 
-The executed applied notebooks are ordered `00` through `08`; notebook `05` begins the point-in-time
+The executed applied notebooks are ordered `00` through `09`; notebook `05` begins the point-in-time
 remediation with label clocks, causal histories, and the bond audit, while notebook `06` derives and
 evaluates the temporal role GNN, and notebook `07` introduces pre-holdout temporal backtesting and the
 temporal graph Transformer decision, and notebook `08` fits, diagnoses, and evaluates that candidate.
+Notebook `09` gives the cross-model comparison and paired validation-only time-encoding ablation.
 The static GraphSAGE architecture derivation lives
 in `notebooks/01_architectures/graphsage.ipynb`; the real-data comparison is
 `notebooks/02_project/04_hetero_graphsage.ipynb`. Both require Graphviz only when re-rendering the traced
@@ -96,6 +97,12 @@ refit live in `src/graph_ml/training/temporal_transformer.py`. Five-seed run-lev
 `results/temporal_transformer_backtest_p90_metrics.csv` and its aggregate rows are part of the shared
 backtest summary. Notebook 08 fits one reproducible illustrative run, plots its training trace and
 anonymous attention weights, then reads the committed five-seed artifact for the honest comparison.
+The paired learned/fixed/no-age validation runs are in
+`results/temporal_transformer_time_ablation.csv`; notebook 09 visualizes each seed as a connected line so
+architecture effects are not confused with initialization effects.
+The paired residual/coverage-gate runs are in
+`results/temporal_transformer_fusion_ablation.csv` and appear in the same notebook. The default remains
+residual fusion because the gate's improvement reverses across validation origins.
 
 ## Git / GitHub
 

@@ -11,6 +11,8 @@ from graph_ml.viz import (
     plot_backtest_pr_auc,
     plot_embedding_projection,
     plot_expanding_backtest_windows,
+    plot_paired_fusion_ablation,
+    plot_paired_time_ablation,
     plot_score_distributions,
     plot_seed_variability,
     plot_temporal_decay_curve,
@@ -184,6 +186,52 @@ def test_backtest_plot_supports_four_centered_model_families():
         patch.get_x() + patch.get_width() / 2 for patch in figure.axes[0].patches
     )
     assert np.mean(centers) == pytest.approx(0.0)
+    plt.close(figure)
+
+
+def test_paired_time_ablation_connects_each_seed_and_mean():
+    rows = []
+    for fold in (1, 2):
+        for seed in (7, 19):
+            for variant, score in (
+                ("none", 0.1),
+                ("fixed_decay", 0.2),
+                ("learned", 0.15),
+            ):
+                rows.append(
+                    {
+                        "fold": fold,
+                        "seed": seed,
+                        "time_encoding": variant,
+                        "validation_pr_auc": score + seed / 1_000,
+                    }
+                )
+
+    figure = plot_paired_time_ablation(pd.DataFrame(rows))
+
+    assert len(figure.axes) == 2
+    assert all(len(axis.lines) == 3 for axis in figure.axes)
+    assert figure.axes[0].get_title() == "validation fold 1"
+    plt.close(figure)
+
+
+def test_paired_fusion_ablation_uses_the_shared_seed_view():
+    rows = []
+    for seed in (7, 19):
+        for fusion, score in (("residual", 0.1), ("coverage_gate", 0.2)):
+            rows.append(
+                {
+                    "fold": 1,
+                    "seed": seed,
+                    "fusion": fusion,
+                    "validation_pr_auc": score,
+                }
+            )
+
+    figure = plot_paired_fusion_ablation(pd.DataFrame(rows))
+
+    assert len(figure.axes[0].lines) == 3
+    assert figure.axes[0].get_xlabel() == "root/message fusion"
     plt.close(figure)
 
 

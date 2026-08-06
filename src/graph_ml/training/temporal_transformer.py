@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from math import ceil
 import random
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -42,6 +43,9 @@ class TemporalTransformerTrainingConfig:
     patience: int = 15
     minimum_improvement: float = 1e-4
     seed: int = 42
+    time_encoding: Literal["learned", "fixed_decay", "none"] = "learned"
+    fixed_half_life_days: float = 180.0
+    fusion: Literal["residual", "coverage_gate"] = "residual"
 
 
 @dataclass(frozen=True)
@@ -207,6 +211,9 @@ def _new_model(channels, config):
         hidden_channels=config.hidden_channels,
         attention_heads=config.attention_heads,
         dropout=config.dropout,
+        time_encoding=config.time_encoding,
+        fixed_half_life_days=config.fixed_half_life_days,
+        fusion=config.fusion,
     ).cpu()
 
 
@@ -262,6 +269,12 @@ def _validate_config(config):
         raise ValueError("dropout or batch_size is invalid")
     if config.max_epochs < 1 or config.patience < 1:
         raise ValueError("max_epochs and patience must be positive")
+    if config.time_encoding not in {"learned", "fixed_decay", "none"}:
+        raise ValueError("time_encoding must be learned, fixed_decay, or none")
+    if config.fixed_half_life_days <= 0:
+        raise ValueError("fixed_half_life_days must be positive")
+    if config.fusion not in {"residual", "coverage_gate"}:
+        raise ValueError("fusion must be residual or coverage_gate")
 
 
 def _seed_everything(seed):

@@ -269,6 +269,18 @@ Transformer parameters exist. This separates data correctness from architecture 
 attention comparison now uses this exact contract; its run-level artifact is
 `results/temporal_transformer_backtest_p90_metrics.csv`.
 
+The first follow-up uses validation scores only. Across the same five paired seeds, learned log-age,
+fixed 180-day logit decay, and no-age treatments are nearly tied: fold-1 means are 0.3016, 0.3046, and
+0.2968; fold-2 means are 0.0203, 0.0199, and 0.0195. No development-test or sealed-holdout outcome is
+used to choose the treatment. The negative result keeps learned time as the default and moves the next
+ablation to root/message fusion. Artifact: `results/temporal_transformer_time_ablation.csv`; studybook:
+`notebooks/02_project/09_model_comparison_and_time_ablation.ipynb`.
+
+The paired fusion follow-up replaces full-strength residual addition with a scalar coverage-aware gate.
+Fold 1 improves from 0.3016 to 0.4272 mean validation PR-AUC, while fold 2 falls from 0.0203 to 0.0101.
+Because the direction reverses, residual fusion remains the default and no development-test labels are
+consulted. Artifact: `results/temporal_transformer_fusion_ablation.csv`.
+
 Implementation: `src/graph_ml/data/temporal_graph.py`,
 `src/graph_ml/models/temporal_role_gnn.py`, and `src/graph_ml/training/temporal_gnn.py`; concept guide:
 `wiki/gnn-concepts/temporal-role-gnn.md`; executed studybook:

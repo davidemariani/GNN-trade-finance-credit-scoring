@@ -601,6 +601,84 @@ def plot_backtest_pr_auc(summary: pd.DataFrame) -> Figure:
     return figure
 
 
+def plot_paired_time_ablation(results: pd.DataFrame) -> Figure:
+    """Compare Transformer time encodings with seeds paired within each fold."""
+
+    return _plot_paired_validation_ablation(
+        results,
+        treatment="time_encoding",
+        variants=("none", "fixed_decay", "learned"),
+        labels=("no age", "fixed 180d decay", "learned log-age"),
+        xlabel="time treatment",
+        title="Changing time encoding does not give a stable validation gain",
+    )
+
+
+def plot_paired_fusion_ablation(results: pd.DataFrame) -> Figure:
+    """Compare residual and coverage-gated fusion with paired seeds."""
+
+    return _plot_paired_validation_ablation(
+        results,
+        treatment="fusion",
+        variants=("residual", "coverage_gate"),
+        labels=("full residual", "coverage gate"),
+        xlabel="root/message fusion",
+        title="Coverage gating has a large but regime-dependent effect",
+    )
+
+
+def _plot_paired_validation_ablation(
+    results: pd.DataFrame,
+    *,
+    treatment: str,
+    variants: tuple[str, ...],
+    labels: tuple[str, ...],
+    xlabel: str,
+    title: str,
+) -> Figure:
+    required = {"fold", "seed", treatment, "validation_pr_auc"}
+    if results.empty or not required.issubset(results.columns):
+        raise ValueError("results are empty or missing paired-ablation columns")
+    unexpected = set(results[treatment]) - set(variants)
+    if unexpected:
+        raise ValueError(f"Unknown {treatment} values: {sorted(unexpected)}")
+    folds = sorted(results["fold"].unique())
+    figure, axes = plt.subplots(1, len(folds), figsize=(5.2 * len(folds), 4.6))
+    axes = np.atleast_1d(axes)
+    x = np.arange(len(variants))
+    for axis, fold in zip(axes, folds, strict=True):
+        pivot = results.loc[results["fold"] == fold].pivot(
+            index="seed", columns=treatment, values="validation_pr_auc"
+        )
+        if pivot.reindex(columns=variants).isna().any(axis=None):
+            raise ValueError(f"Fold {fold} does not contain paired seed results")
+        paired = pivot.loc[:, variants]
+        for seed, row in paired.iterrows():
+            axis.plot(x, row, color="#9E9E9E", marker="o", alpha=0.65, label=None)
+            axis.annotate(
+                str(seed),
+                (x[-1], row.iloc[-1]),
+                xytext=(4, 0),
+                textcoords="offset points",
+                fontsize=7,
+            )
+        means = paired.mean(axis=0)
+        axis.plot(
+            x, means, color="#C44E52", marker="o", linewidth=3, label="five-seed mean"
+        )
+        axis.set_xticks(x, labels, rotation=12)
+        axis.set(
+            title=f"validation fold {fold}",
+            xlabel=xlabel,
+            ylabel="validation PR-AUC",
+        )
+        axis.legend(frameon=False)
+        axis.spines[["top", "right"]].set_visible(False)
+    figure.suptitle(title)
+    figure.tight_layout()
+    return figure
+
+
 def _validated_binary_arrays(
     y_true: ArrayLike, y_score: ArrayLike
 ) -> tuple[np.ndarray, np.ndarray]:

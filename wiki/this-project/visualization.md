@@ -102,6 +102,10 @@ The applied notebooks now use a consistent set of tested teaching figures from `
   plots validation-only epoch selection, renders a real anonymous relation-by-slot attention heatmap with
   event ages, and compares all four model families over both folds. It distinguishes attention diagnostics
   from causal explanation and records the Transformer's mixed five-seed result.
+- notebook 09 puts retrospective impairment and causal p90 models on explicitly separate scoreboards,
+  repeats the four-family rolling comparison, and connects paired seeds across no-age, fixed-decay, and
+  learned-time treatments so initialization variance remains visible rather than hidden by means. A
+  second paired view shows that coverage gating's large fold-1 gain reverses in fold 2.
 
 Every graph legend maps color to node or relation semantics. Real-data network figures expose anonymous
 topology only: generic `C*`/`I*` labels replace business identifiers, and bounded ego views replace an

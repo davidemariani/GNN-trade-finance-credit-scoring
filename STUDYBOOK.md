@@ -54,6 +54,18 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 
 ## Decision log (most recent first — one line + why, link for detail)
 
+- **Coverage gating has a large but regime-dependent effect (2026-08-06)**: a scalar gate conditioned on
+  the current root state and four relation-coverage fractions raises fold-1 validation PR-AUC from 0.302
+  to 0.427, but lowers fold 2 from 0.020 to 0.010. *Why*: the sign reversal is not a robust improvement;
+  residual fusion stays default and smaller capacity/stronger regularization is next. The implementation
+  also preserves the RNG stream so a dormant gate cannot silently change control dropout masks. →
+  notebook 09, `results/temporal_transformer_fusion_ablation.csv`
+- **Transformer time encoding is not the main bottleneck (2026-08-06)**: paired five-seed validation
+  means for learned log-age, fixed 180-day attention decay, and no age are respectively 0.3016/0.3046/
+  0.2968 in fold 1 and 0.0203/0.0199/0.0195 in fold 2. *Why*: differences are small relative to seed
+  spread and fixed decay does not improve both origins, so learned time remains the default and the next
+  ablation targets root/message fusion (now completed below). → notebook 09,
+  `results/temporal_transformer_time_ablation.csv`
 - **Temporal graph Transformer evaluated but not promoted (2026-08-06)**: the complete causal model,
   rolling train/select/refit wrapper, five-seed backtest, and anonymous learned-attention diagnostic are
   implemented. It improves fold-1 seen mean PR-AUC to 0.034, but fold-2 overall reaches only 0.087 versus
@@ -237,12 +249,13 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 
 Planning/design is done (Phases 0-1 + the design decisions), the data is converted to Parquet (backup
 still open), and graph construction, fixed-origin evaluation, EDA/topology, and both retrospective and
-causal model comparisons are implemented, tested, and explained in nine applied notebooks. Phase 3.5 is
+causal model comparisons are implemented, tested, and explained in ten applied notebooks. Phase 3.5 is
 complete, and the first Phase 3.6 causal p90 slice now compares fold-safe LightGBM with a four-channel
 temporal role GNN and a bounded temporal graph Transformer. Neither neural family wins robustly and
-cold-start remains unresolved. Next are validation-only temporal-attention ablations and foundations notebooks;
+cold-start remains unresolved. Time treatment is nearly tied and coverage gating reverses across origins;
+smaller Transformer capacity/stronger regularization is next, alongside foundations notebooks;
 impairment timestamp recovery remains open in parallel. The causal audit is in notebook 05 and the visual
-temporal-model derivation/results are in notebooks 06–08. See
+temporal-model derivation/results and comparison are in notebooks 06–09. See
 `specs/roadmap.md` for the full phased plan and `BACKLOG.md` for the ordered next tasks.
 
 ## Map of the docs (what to read for what)

@@ -78,3 +78,9 @@ implemented and evaluated across the same five seeds. It improves fold-1 seen-co
 0.034 but trails LightGBM and the fixed-decay temporal GNN in fold 2 (0.087 overall versus 0.120 and
 0.119). Notebook `08_temporal_graph_transformer.ipynb` derives the model, visualizes a real learned
 attention pattern, and explains why attention weights are diagnostics rather than causal explanations.
+Notebook `09_model_comparison_and_time_ablation.ipynb` separates the retrospective impairment and causal
+p90 scoreboards, then shows that learned log-age, fixed 180-day decay, and no-age Transformer variants
+are nearly tied on paired validation seeds. Its follow-up coverage gate has a large sign-reversing
+effect—0.427 versus 0.302 in fold 1, but 0.010
+versus 0.020 in fold 2—so it is retained as an ablation rather than promoted. Capacity/regularization is
+next.

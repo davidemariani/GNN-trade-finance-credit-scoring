@@ -69,10 +69,32 @@ best alternatives because attention cannot select absent history. This candidate
 but not promoted. Next ablations must remain validation-only: time encoding, capacity/regularization, K,
 and root/message fusion.
 
+### Time-treatment ablation
+
+The first validation-only ablation holds histories, relations, architecture, optimization, and paired
+seeds fixed. `learned` uses the log-age MLP; `fixed_decay` adds
+`-log(2) * age / 180` directly to every legal attention logit; `none` withholds age. Padding remains
+negative infinity and causal eligibility is unchanged. Fold-1 mean validation PR-AUC is 0.3016 learned,
+0.3046 fixed, and 0.2968 none; fold 2 is 0.0203, 0.0199, and 0.0195. These differences are small relative
+to initialization spread and fixed decay does not win both origins. Learned time therefore stays as the
+default; coverage-aware root/message fusion became the next hypothesis. See notebook 09 and
+`results/temporal_transformer_time_ablation.csv`.
+
+### Root/message fusion ablation
+
+The original residual uses `root + message`. The tested gate uses `root + g * message`, where one scalar
+`g` in `[0, 1]` depends on the root representation and the occupied fraction of each relation's K slots.
+It raises fold-1 five-seed mean validation PR-AUC from 0.3016 to 0.4272 but lowers fold 2 from 0.0203 to
+0.0101. This large sign-reversing effect is evidence that coverage interacts with regime, not evidence
+for a generally superior gate. Residual fusion remains default; capacity/regularization is next. The
+control preserves PyTorch's random stream around dormant gate initialization so its historical training
+trajectory remains exact. Artifact: `results/temporal_transformer_fusion_ablation.csv`.
+
 ## Related material
 
 - General event-time principles: [Temporal graphs](temporal-graphs.md)
 - Current fixed-decay model: [Temporal role GNN](temporal-role-gnn.md)
 - Applied derivation, fitted attention diagnostic, and result: `notebooks/02_project/08_temporal_graph_transformer.ipynb`
+- Cross-model scoreboards and paired component ablations: `notebooks/02_project/09_model_comparison_and_time_ablation.ipynb`
 - Bounded causal event tensors: `src/graph_ml/data/temporal_graph.py`
 - Evaluation contract: `wiki/this-project/evaluation.md`
