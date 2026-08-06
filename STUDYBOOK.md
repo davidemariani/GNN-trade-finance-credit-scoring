@@ -47,9 +47,21 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
   of nodes; median company degree 5 vs. maximum 5,636; 15 hybrids touch 20.84% of modelling instruments.
 - Causal p90 comparison (`wiki/this-project/evaluation.md`): LightGBM PR-AUC 0.079 overall / 0.102 seen /
   0.026 cold-start; temporal role GNN five-seed mean 0.053 ± 0.033 / 0.065 ± 0.044 / 0.023 ± 0.003.
+- Later pre-holdout p90 fold (`wiki/this-project/evaluation.md`): temporal GNN mean PR-AUC 0.119 overall /
+  0.194 seen / 0.092 cold-start versus LightGBM 0.120 / 0.157 / 0.119; ordering varies through time.
 
 ## Decision log (most recent first — one line + why, link for detail)
 
+- **Temporal graph Transformer accepted as the next candidate, behind causal sequence construction
+  (2026-08-05)**: attention may select informative events better than one fixed-decay mean, especially at
+  hubs, but it cannot solve missing history and must use strict time masks, bounded role-specific events,
+  five seeds, and pre-holdout selection. *Why*: backtests show relation context can help seen companies but
+  is non-stationary and seed-sensitive. → `wiki/gnn-concepts/temporal-graph-transformers.md`, notebook 07
+- **Pre-holdout temporal backtesting implemented (2026-08-05)**: two accepted twelve-month folds rebuild
+  preprocessing/selection/refit per origin and enforce at least ten examples per class; the later fold
+  finds temporal GNN 0.119 overall / 0.194 seen versus LightGBM 0.120 / 0.157, but weaker cold-start.
+  *Why*: architecture choices need development-time evidence now that the final 2018 holdout has been
+  reported. → `wiki/this-project/evaluation.md`, `results/temporal_backtest_p90_summary.csv`, notebook 07
 - **Root-only temporal control isolates graph value and cold-start harm (2026-08-02)**: removing relation
   messages lowers five-seed mean PR-AUC from 0.053 to 0.035 overall and 0.065 to 0.038 seen, but improves
   cold-start from 0.023 to 0.033 with much lower variance. *Why*: causal graph history carries signal when
@@ -205,10 +217,11 @@ among the works referenced from the job-application portfolio at `~/Desktop/stud
 
 Planning/design is done (Phases 0-1 + the design decisions), the data is converted to Parquet (backup
 still open), and graph construction, fixed-origin evaluation, EDA/topology, and both retrospective and
-causal model comparisons are implemented, tested, and explained in seven applied notebooks. Phase 3.5 is
+causal model comparisons are implemented, tested, and explained in eight applied notebooks. Phase 3.5 is
 complete, and the first Phase 3.6 causal p90 slice now compares fold-safe LightGBM with a four-channel
 temporal role GNN. The GNN does not win robustly and cold-start remains unresolved. Next are
-validation-only temporal component ablations, multiple rolling test windows, and foundations notebooks;
+bounded causal event sequences for a temporal attention/Transformer candidate, remaining validation-only
+ablations, and foundations notebooks;
 impairment timestamp recovery remains open in parallel. The causal audit is in notebook 05 and the visual
 temporal-model derivation/result is in notebook 06. See
 `specs/roadmap.md` for the full phased plan and `BACKLOG.md` for the ordered next tasks.

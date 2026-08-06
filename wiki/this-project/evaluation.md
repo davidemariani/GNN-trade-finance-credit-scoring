@@ -221,6 +221,45 @@ seen means, but reduce cold-start from 0.033 to 0.023 and introduce much more se
 history is useful when it exists; empty/sparse-history fallback and gating are the next validation target.
 Run log: `results/root_only_p90_metrics.csv`.
 
+### Pre-holdout temporal backtests (implemented 2026-08-05)
+
+The reported April–December 2018 holdout must no longer guide architecture choices. Two earlier
+expanding-window backtests now provide development evidence. A fold generator guarantees that their test
+boundaries do not cross the final holdout start. The high-level runner rebuilds preprocessing, selection,
+refit, and cold-start identity inside every fold and rejects any train/validation/test partition with
+fewer than ten examples of either class.
+
+Four-month windows produced zero mature validation positives; an initial eight-month design left one
+validation block with only nine. The accepted twelve-month folds are:
+
+| Fold | Train end | Validation end | Development test end | Train / validation / test positives |
+|---|---|---|---|---:|
+| 1 | 2015-04-01 | 2016-04-01 | 2017-04-01 | 19 / 72 / 27 |
+| 2 | 2016-04-01 | 2017-04-01 | 2018-04-01 | 107 / 27 / 2,106 |
+
+PR-AUC results (neural entries are five-seed mean ± sample SD):
+
+| Fold | Cohort | Prevalence | LightGBM | Root only | Temporal role GNN |
+|---|---|---:|---:|---:|---:|
+| 1 | all | 0.41% | 0.007 | 0.008 ± 0.005 | 0.012 ± 0.018 |
+| 1 | seen | 0.37% | 0.009 | 0.011 ± 0.007 | 0.006 ± 0.004 |
+| 1 | cold-start | 0.45% | 0.007 | 0.010 ± 0.007 | 0.018 ± 0.030 |
+| 2 | all | 9.77% | 0.120 | 0.094 ± 0.041 | 0.119 ± 0.046 |
+| 2 | seen | 16.22% | 0.157 | 0.138 ± 0.034 | 0.194 ± 0.071 |
+| 2 | cold-start | 7.08% | 0.119 | 0.077 ± 0.039 | 0.092 ± 0.039 |
+
+The experiment does not establish a universal winner. Prevalence and model ordering change materially
+through time; fold 1 contains only 27 test positives and its neural ranges are correspondingly unstable.
+In fold 2 the temporal GNN is effectively tied with LightGBM overall, stronger on seen companies, and
+weaker on cold-start. Together with the final-holdout result, this supports selective temporal context
+for history-rich companies but not test-driven tuning of one fixed-decay model.
+
+The backtests are now the selection environment for bounded recent-event attention and a small temporal
+graph Transformer. Implementation: `src/graph_ml/backtesting.py`; fold construction:
+`src/graph_ml/evaluation/point_in_time.py`; summary artifact:
+`results/temporal_backtest_p90_summary.csv`; visual studybook:
+`notebooks/02_project/07_temporal_backtesting.ipynb`.
+
 Implementation: `src/graph_ml/data/temporal_graph.py`,
 `src/graph_ml/models/temporal_role_gnn.py`, and `src/graph_ml/training/temporal_gnn.py`; concept guide:
 `wiki/gnn-concepts/temporal-role-gnn.md`; executed studybook:

@@ -44,6 +44,16 @@ class RollingOriginFoldSpec:
 
 
 @dataclass(frozen=True)
+class ExpandingWindowPlan:
+    """Calendar plan for consecutive pre-holdout development folds."""
+
+    first_train_end: str | pd.Timestamp
+    window_months: int
+    fold_count: int
+    final_holdout_start: str | pd.Timestamp
+
+
+@dataclass(frozen=True)
 class PointInTimeFold:
     """Row-aligned masks whose labels are knowable at each decision boundary."""
 
@@ -173,6 +183,38 @@ def build_point_in_time_fold(
         refit_mask=refit,
         test_mask=test,
     )
+
+
+def build_expanding_window_specs(
+    plan: ExpandingWindowPlan,
+) -> tuple[RollingOriginFoldSpec, ...]:
+    """Generate expanding-train folds that finish before a sealed holdout.
+
+    Each fold advances by one window. Validation and test windows have equal
+    calendar length; the training history expands rather than sliding forward.
+    The final development test boundary may equal, but never exceed, the sealed
+    holdout start.
+    """
+
+    if plan.window_months < 1 or plan.fold_count < 1:
+        raise ValueError("window_months and fold_count must be positive")
+    first_train_end = _normalize_timestamp(plan.first_train_end, "first_train_end")
+    holdout_start = _normalize_timestamp(
+        plan.final_holdout_start, "final_holdout_start"
+    )
+    specs = tuple(
+        RollingOriginFoldSpec(
+            train_end=first_train_end + pd.DateOffset(months=index * plan.window_months),
+            validation_end=first_train_end
+            + pd.DateOffset(months=(index + 1) * plan.window_months),
+            test_end=first_train_end
+            + pd.DateOffset(months=(index + 2) * plan.window_months),
+        )
+        for index in range(plan.fold_count)
+    )
+    if pd.Timestamp(specs[-1].test_end) > holdout_start:
+        raise ValueError("Development folds must end on or before final_holdout_start")
+    return specs
 
 
 def _binary_labels(series: pd.Series, name: str) -> tuple[np.ndarray, np.ndarray]:

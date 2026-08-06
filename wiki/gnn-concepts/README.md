@@ -23,6 +23,8 @@ Planned entries (create as each is actually covered — don't pre-write stubs wi
   messages, memory, and the next applied direction)
 - [Temporal role GNN](temporal-role-gnn.md) (the implemented four-channel, time-decayed causal model and
   its leakage contract)
+- [Temporal graph Transformers](temporal-graph-transformers.md) (causal attention over bounded typed
+  event histories, its promise, and its leakage/cold-start limits)
 
 **Architectures** (mirrors `notebooks/01_architectures/`)
 - GCN
@@ -31,3 +33,5 @@ Planned entries (create as each is actually covered — don't pre-write stubs wi
 - GAT
 - GIN
 - [Temporal role GNN](temporal-role-gnn.md) (the first applied causal temporal architecture)
+- [Temporal graph Transformers](temporal-graph-transformers.md) (the next candidate after causal event
+  sequence construction)

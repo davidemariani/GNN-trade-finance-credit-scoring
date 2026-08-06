@@ -92,6 +92,11 @@ The applied notebooks now use a consistent set of tested teaching figures from `
   makes the 180-day exponential decay tangible, inspects real causal tensor/history coverage, shows
   validation-only epoch selection, plots all five seeds against the fixed causal LightGBM bar, and uses a
   root-only comparison to make the graph context's seen/cold-start trade-off visible.
+- notebook 07 draws expanding train/validation/development-test windows beside the sealed reported
+  holdout, makes label-support checks visible, and compares fold-level PR-AUC with prevalence and full
+  neural seed ranges. It then traces temporal attention from graph-constrained candidate events through
+  query/key/value scoring, causal masking, softmax, and the weighted message, alongside first-principles
+  explanations of time/relation encodings, multi-head attention, neighbour caps, padding, and fallback.
 
 Every graph legend maps color to node or relation semantics. Real-data network figures expose anonymous
 topology only: generic `C*`/`I*` labels replace business identifiers, and bounded ego views replace an

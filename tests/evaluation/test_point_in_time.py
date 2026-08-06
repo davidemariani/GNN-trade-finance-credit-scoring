@@ -5,8 +5,10 @@ import pandas as pd
 import pytest
 
 from graph_ml.evaluation import (
+    ExpandingWindowPlan,
     RollingOriginFoldSpec,
     build_event_label_availability,
+    build_expanding_window_specs,
     build_horizon_label_availability,
     build_point_in_time_fold,
 )
@@ -138,3 +140,29 @@ def test_rejects_non_chronological_boundaries(spec):
 
     with pytest.raises(ValueError, match="train_end < validation_end < test_end"):
         build_point_in_time_fold(frame["due_date"], availability, spec)
+
+
+def test_expanding_window_specs_stop_before_sealed_holdout():
+    specs = build_expanding_window_specs(
+        ExpandingWindowPlan("2016-04-01", 8, 2, "2018-04-30")
+    )
+
+    assert specs == (
+        RollingOriginFoldSpec(
+            pd.Timestamp("2016-04-01"),
+            pd.Timestamp("2016-12-01"),
+            pd.Timestamp("2017-08-01"),
+        ),
+        RollingOriginFoldSpec(
+            pd.Timestamp("2016-12-01"),
+            pd.Timestamp("2017-08-01"),
+            pd.Timestamp("2018-04-01"),
+        ),
+    )
+
+
+def test_expanding_window_specs_reject_holdout_overlap():
+    with pytest.raises(ValueError, match="final_holdout_start"):
+        build_expanding_window_specs(
+            ExpandingWindowPlan("2016-04-01", 8, 3, "2018-04-30")
+        )

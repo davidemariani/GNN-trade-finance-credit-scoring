@@ -9,6 +9,8 @@ from numpy.typing import ArrayLike
 import pandas as pd
 from sklearn.decomposition import PCA
 
+from graph_ml.evaluation import RollingOriginFoldSpec
+
 
 def plot_training_history(
     train_losses: ArrayLike,
@@ -298,6 +300,186 @@ def plot_temporal_message_schematic() -> Figure:
     axis.set_xlim(0, 1)
     axis.set_ylim(0, 1)
     axis.axis("off")
+    figure.tight_layout()
+    return figure
+
+
+def plot_temporal_attention_schematic() -> Figure:
+    """Explain causal graph attention from event selection to weighted message."""
+
+    figure, axis = plt.subplots(figsize=(12, 5.2))
+    boxes = (
+        (0.08, 0.63, "current invoice\nquery Q", "#F0A202"),
+        (0.08, 0.25, "strictly-prior role events\nkeys K and values V", "#4C72B0"),
+        (0.38, 0.44, "compatibility scores\nQ · K / √d", "#8172B2"),
+        (0.62, 0.44, "causal mask + softmax\nattention weights α", "#55A868"),
+        (0.88, 0.44, "weighted message\nΣ αV", "#C44E52"),
+    )
+    for x, y, label, color in boxes:
+        axis.text(
+            x,
+            y,
+            label,
+            ha="center",
+            va="center",
+            color="white",
+            weight="bold",
+            bbox={"boxstyle": "round,pad=0.7", "facecolor": color, "edgecolor": "white"},
+        )
+    for start, end in (
+        ((0.17, 0.63), (0.29, 0.49)),
+        ((0.18, 0.25), (0.29, 0.39)),
+        ((0.47, 0.44), (0.53, 0.44)),
+        ((0.72, 0.44), (0.79, 0.44)),
+    ):
+        axis.annotate("", xy=end, xytext=start, arrowprops={"arrowstyle": "-|>", "lw": 2, "color": "#444444"})
+    axis.text(
+        0.5,
+        0.08,
+        "Graph/role chooses candidate neighbours  •  time mask removes tⱼ ≥ tᵢ  •  "
+        "attention learns importance among the legal past",
+        ha="center",
+        va="center",
+        fontsize=10,
+    )
+    axis.text(0.62, 0.75, "future or padded event", ha="center", color="#C44E52")
+    axis.plot([0.55, 0.69], [0.72, 0.78], color="#C44E52", linewidth=3)
+    axis.plot([0.55, 0.69], [0.78, 0.72], color="#C44E52", linewidth=3)
+    axis.set(title="Temporal graph attention replaces fixed neighbour averaging")
+    axis.set_xlim(0, 1)
+    axis.set_ylim(0, 1)
+    axis.axis("off")
+    figure.tight_layout()
+    return figure
+
+
+def plot_expanding_backtest_windows(
+    specs: tuple[RollingOriginFoldSpec, ...],
+    *,
+    final_holdout_start: str | pd.Timestamp,
+) -> Figure:
+    """Draw train, validation, test, and sealed-holdout calendar regions."""
+
+    if not specs:
+        raise ValueError("specs must not be empty")
+    holdout = pd.Timestamp(final_holdout_start)
+    boundaries = [
+        tuple(
+            pd.Timestamp(value)
+            for value in (spec.train_end, spec.validation_end, spec.test_end)
+        )
+        for spec in specs
+    ]
+    if any(
+        not train < validation < test <= holdout
+        for train, validation, test in boundaries
+    ):
+        raise ValueError("Fold boundaries must be chronological and pre-holdout")
+    start = min(train for train, _, _ in boundaries) - pd.DateOffset(years=2)
+    figure, axis = plt.subplots(figsize=(11, 1.5 + 1.15 * len(specs)))
+    colors = {"train": "#4C72B0", "validation": "#DD8452", "test": "#55A868"}
+    for row, (train_end, validation_end, test_end) in enumerate(boundaries):
+        axis.barh(
+            row,
+            train_end - start,
+            left=start,
+            color=colors["train"],
+            label="expanding train" if row == 0 else None,
+        )
+        axis.barh(
+            row,
+            validation_end - train_end,
+            left=train_end,
+            color=colors["validation"],
+            label="validation" if row == 0 else None,
+        )
+        axis.barh(
+            row,
+            test_end - validation_end,
+            left=validation_end,
+            color=colors["test"],
+            label="development test" if row == 0 else None,
+        )
+    axis.axvspan(
+        holdout,
+        holdout + pd.DateOffset(months=8),
+        color="#C44E52",
+        alpha=0.25,
+        label="sealed final holdout",
+    )
+    axis.set_yticks(
+        range(len(specs)), [f"fold {index}" for index in range(1, len(specs) + 1)]
+    )
+    axis.set(
+        title="Development windows end before the sealed final holdout",
+        xlabel="calendar time",
+    )
+    axis.legend(
+        frameon=False, ncols=4, loc="upper center", bbox_to_anchor=(0.5, -0.28)
+    )
+    axis.spines[["top", "right", "left"]].set_visible(False)
+    figure.tight_layout()
+    return figure
+
+
+def plot_backtest_pr_auc(summary: pd.DataFrame) -> Figure:
+    """Compare fold-level model PR-AUC with prevalence and neural ranges."""
+
+    required = {
+        "fold",
+        "model",
+        "cohort",
+        "mean_pr_auc",
+        "minimum",
+        "maximum",
+        "prevalence",
+    }
+    if not required.issubset(summary.columns) or summary.empty:
+        raise ValueError("summary is empty or missing backtest columns")
+    cohorts = summary["cohort"].drop_duplicates().tolist()
+    models = summary["model"].drop_duplicates().tolist()
+    folds = sorted(summary["fold"].unique())
+    figure, axes = plt.subplots(
+        1, len(cohorts), figsize=(5 * len(cohorts), 4.6), sharey=True
+    )
+    axes = np.atleast_1d(axes)
+    width = 0.24
+    colors = ("#4C72B0", "#8172B2", "#C44E52")
+    for axis, cohort in zip(axes, cohorts, strict=True):
+        rows = summary.loc[summary["cohort"] == cohort]
+        x = np.arange(len(folds), dtype=float)
+        for offset, (model, color) in enumerate(
+            zip(models, colors, strict=False)
+        ):
+            ordered = rows.loc[rows["model"] == model].set_index("fold").loc[folds]
+            means = ordered["mean_pr_auc"].to_numpy()
+            errors = np.vstack(
+                (means - ordered["minimum"], ordered["maximum"] - means)
+            )
+            axis.bar(
+                x + (offset - 1) * width,
+                means,
+                width,
+                color=color,
+                label=model.replace("_", " "),
+                yerr=errors,
+                capsize=3,
+            )
+        prevalence = (
+            rows.drop_duplicates("fold")
+            .set_index("fold")
+            .loc[folds, "prevalence"]
+        )
+        axis.plot(x, prevalence, "k--o", label="prevalence")
+        axis.set_xticks(x, [f"fold {fold}" for fold in folds])
+        axis.set(
+            title=cohort.replace("test_", "").replace("_", " "),
+            xlabel="development origin",
+        )
+        axis.spines[["top", "right"]].set_visible(False)
+    axes[0].set_ylabel("PR-AUC (bars show min–max across seeds)")
+    axes[-1].legend(frameon=False, fontsize=8)
+    figure.suptitle("Model ordering and prevalence change materially through time")
     figure.tight_layout()
     return figure
 

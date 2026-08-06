@@ -50,9 +50,10 @@ jupyter lab notebooks/
 
 See `specs/instructions/notebook-standards.md` before adding a new notebook.
 
-The executed applied notebooks are ordered `00` through `06`; notebook `05` begins the point-in-time
+The executed applied notebooks are ordered `00` through `07`; notebook `05` begins the point-in-time
 remediation with label clocks, causal histories, and the bond audit, while notebook `06` derives and
-evaluates the temporal role GNN. The static GraphSAGE architecture derivation lives
+evaluates the temporal role GNN, and notebook `07` introduces pre-holdout temporal backtesting and the
+temporal graph Transformer decision. The static GraphSAGE architecture derivation lives
 in `notebooks/01_architectures/graphsage.ipynb`; the real-data comparison is
 `notebooks/02_project/04_hetero_graphsage.ipynb`. Both require Graphviz only when re-rendering the traced
 computational graph; their committed outputs remain visible without rerunning.
@@ -78,6 +79,11 @@ notebook 06. Its five-seed artifact is `results/temporal_gnn_p90_metrics.csv`. A
 deterministic on CPU; the other frozen seeds remain in the result artifact so the notebook teaches
 variability without retraining five models every time. The five-seed root-only diagnostic is retained in
 `results/root_only_p90_metrics.csv` and visualized in the same notebook.
+
+`src/graph_ml/backtesting.py` runs LightGBM, root-only neural, and temporal role GNN across fold specs while
+rebuilding every learned stage per origin. The accepted development summary is
+`results/temporal_backtest_p90_summary.csv`; notebook 07 visualizes it without rerunning the expensive
+five-seed grid. The runner rejects statistically thin partitions by default.
 
 ## Git / GitHub
 

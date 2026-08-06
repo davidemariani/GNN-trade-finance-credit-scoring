@@ -192,3 +192,11 @@ foundation, not a model win. Validation-only ablations should now isolate the ro
 decay, and hub aggregation before adding recurrent memory or longer contagion paths. See
 `wiki/gnn-concepts/temporal-role-gnn.md` and
 `notebooks/02_project/06_temporal_role_gnn.ipynb`.
+
+The 2026-08-05 pre-holdout backtest shows that this ordering is not stationary: the temporal GNN is tied
+with LightGBM overall and stronger on seen companies in the later development fold, while remaining
+weaker on cold-start and highly seed-sensitive. The next graph representation should therefore retain
+several bounded recent events per role instead of immediately collapsing them to one mean. This enables
+a small causal temporal graph Transformer to learn content-dependent neighbour weights. The hard
+requirements are strict `< t_i` masking, relation identity, an explicit empty-history root fallback, and
+a hub cap chosen on development folds. See `wiki/gnn-concepts/temporal-graph-transformers.md`.

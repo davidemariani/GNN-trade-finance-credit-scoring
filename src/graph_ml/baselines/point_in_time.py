@@ -100,6 +100,7 @@ class PointInTimeLightGBMRun:
 
     scores: np.ndarray
     best_iteration: int
+    best_validation_pr_auc: float
     feature_gains: tuple[tuple[str, float], ...]
     encoder: PointInTimeFeatureEncoder
     seed: int
@@ -268,6 +269,9 @@ def fit_point_in_time_lightgbm(
         ],
     )
     best_iteration = int(search_model.best_iteration_ or config.max_estimators)
+    best_validation_pr_auc = float(
+        search_model.best_score_["valid_0"]["average_precision"]
+    )
 
     final_encoder = fit_point_in_time_encoder(features, fold.refit_mask)
     final_matrix = final_encoder.transform(features)
@@ -285,6 +289,7 @@ def fit_point_in_time_lightgbm(
     return PointInTimeLightGBMRun(
         scores=scores,
         best_iteration=best_iteration,
+        best_validation_pr_auc=best_validation_pr_auc,
         feature_gains=feature_gains,
         encoder=final_encoder,
         seed=config.seed,

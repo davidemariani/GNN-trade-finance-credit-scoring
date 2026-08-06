@@ -65,9 +65,19 @@ against the held-out test set.
         messages improve overall/seen means but hurt cold-start. Next improve empty-history fallback/gating,
         then test relation collapse, no-decay/predeclared half-lives, and recent-neighbour handling for hubs. Choose changes on
         rolling validation, not the already reported test period; report multiple seeds for neural models.
-13. [ ] **Add multiple rolling test windows** — confirm whether the LightGBM/GNN ordering and temporal
-        instability persist across time rather than relying on one deployment origin.
-14. [ ] **Backfill foundations alongside the evidence** — message passing and over-smoothing first;
+13. [x] **Add multiple rolling test windows** — two twelve-month pre-holdout folds now enforce minimum
+        class support and show that prevalence, model ordering, and seed variance change materially over
+        time. → `results/temporal_backtest_p90_summary.csv`, notebook 07.
+14. [ ] **Build bounded causal recent-event tensors** — retain a fixed number of strictly-prior events per
+        endpoint/role with age, masks, and explicit empty-history handling; adversarially test future and
+        simultaneous-event isolation. This is shared infrastructure for recent-neighbour ablations and a
+        temporal graph Transformer.
+15. [ ] **Implement a small temporal graph Transformer candidate** — current invoice query, role-specific
+        historical keys/values, continuous time encoding, causal/padding masks, comparable parameter
+        budget, five seeds, and selection only on the development backtests. Its applied notebook must
+        derive every technique before code and inspect tensor shapes, masks, and learned attention. →
+        `wiki/gnn-concepts/temporal-graph-transformers.md`.
+16. [ ] **Backfill foundations alongside the evidence** — message passing and over-smoothing first;
         GAT/GIN follow after the corrected evaluation contract and temporal ablations.
 
 ## Parked (revisit when the relevant phase starts)

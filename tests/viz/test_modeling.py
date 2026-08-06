@@ -5,12 +5,16 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from graph_ml.evaluation import RollingOriginFoldSpec
 from graph_ml.viz import (
     embedding_projection_frame,
+    plot_backtest_pr_auc,
     plot_embedding_projection,
+    plot_expanding_backtest_windows,
     plot_score_distributions,
     plot_seed_variability,
     plot_temporal_decay_curve,
+    plot_temporal_attention_schematic,
     plot_temporal_message_schematic,
     plot_training_history,
     seed_metric_summary,
@@ -85,6 +89,52 @@ def test_temporal_teaching_figures_explain_decay_and_relations():
     plt.close(schematic)
 
 
+def test_temporal_attention_schematic_explains_causal_weighting():
+    figure = plot_temporal_attention_schematic()
+
+    assert figure.axes[0].get_title().startswith("Temporal graph attention")
+    assert any("time mask" in text.get_text() for text in figure.axes[0].texts)
+    plt.close(figure)
+
+
 def test_temporal_decay_rejects_nonpositive_half_life():
     with pytest.raises(ValueError, match="positive"):
         plot_temporal_decay_curve(half_life_days=0)
+
+
+def test_backtest_figures_show_windows_and_model_ranges():
+    specs = (
+        RollingOriginFoldSpec("2020-01-01", "2021-01-01", "2022-01-01"),
+        RollingOriginFoldSpec("2021-01-01", "2022-01-01", "2023-01-01"),
+    )
+    rows = []
+    for fold in (1, 2):
+        for model, score in (("tree", 0.2), ("root", 0.15), ("gnn", 0.25)):
+            rows.append(
+                {
+                    "fold": fold,
+                    "model": model,
+                    "cohort": "test_all",
+                    "mean_pr_auc": score,
+                    "minimum": score - 0.02,
+                    "maximum": score + 0.02,
+                    "prevalence": 0.1,
+                }
+            )
+    windows = plot_expanding_backtest_windows(
+        specs, final_holdout_start="2023-01-01"
+    )
+    comparison = plot_backtest_pr_auc(pd.DataFrame(rows))
+
+    assert windows.axes[0].get_title().startswith("Development windows")
+    assert comparison.axes[0].get_title() == "all"
+    plt.close(windows)
+    plt.close(comparison)
+
+
+def test_backtest_window_figure_rejects_holdout_overlap():
+    with pytest.raises(ValueError, match="pre-holdout"):
+        plot_expanding_backtest_windows(
+            (RollingOriginFoldSpec("2020-01-01", "2021-01-01", "2024-01-01"),),
+            final_holdout_start="2023-01-01",
+        )

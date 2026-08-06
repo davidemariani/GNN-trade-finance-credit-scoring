@@ -162,9 +162,10 @@ the test budget on more architecture tuning.
       features, labels, selected hyperparameters, embeddings, or scores. The current point-in-time feature,
       context, and model tests cover strict ordering, simultaneous events, future-row isolation, and target
       exclusion; extend them with each new temporal component. ✓
-- [ ] Use rolling-origin validation/test windows and report prevalence, seen/cold-start status, and multiple
+- [x] Use rolling-origin validation/test windows and report prevalence, seen/cold-start status, and multiple
       time folds. If impairment timing cannot be established, use an explicit p90/p180 horizon or survival
-      formulation rather than inventing event times.
+      formulation rather than inventing event times. Implemented for p90 with two pre-holdout development
+      folds plus the reported final origin. ✓
 - [x] Re-run LightGBM first on the point-in-time feature stream: p90 PR-AUC is 0.079 all / 0.102 seen /
       0.026 cold-start with 58 trees selected on rolling validation. ✓
 - [x] Compare a role-aware temporal
@@ -178,9 +179,15 @@ the test budget on more architecture tuning.
 - [ ] Run temporal component ablations chosen on validation folds: root-only control, relation collapse,
       no-decay/predeclared half-lives, and hub-aware recent-neighbour aggregation. Root-only is complete:
       relation contexts improve overall/seen means but hurt cold-start; remaining ablations stay open.
+- [x] Add pre-holdout expanding-window backtests with minimum class support. Two twelve-month folds now
+      show time-varying prevalence/model ordering and provide the selection environment for architecture
+      changes without reusing the reported final holdout. ✓
+- [ ] Build bounded strictly-prior role-event tensors and evaluate a small causal temporal graph
+      Transformer against fixed-decay GNN, root-only, and LightGBM on the development folds.
 
 Detailed audit: `wiki/this-project/evaluation.md`; concept guide:
-`wiki/gnn-concepts/temporal-graphs.md` and `wiki/gnn-concepts/temporal-role-gnn.md`; bond-feature audit:
+`wiki/gnn-concepts/temporal-graphs.md`, `wiki/gnn-concepts/temporal-role-gnn.md`, and
+`wiki/gnn-concepts/temporal-graph-transformers.md`; bond-feature audit:
 `wiki/this-project/bond-graph-leakage-audit.md`.
 
 ---

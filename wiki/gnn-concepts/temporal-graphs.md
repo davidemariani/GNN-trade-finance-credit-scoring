@@ -40,9 +40,11 @@ but does not robustly beat causal LightGBM. See [Temporal role GNN](temporal-rol
 
 Time was therefore a **correctness improvement**, not a promise of a higher score. The matched
 time-aware LightGBM baseline was essential: it showed that correctness and predictive advantage are
-separate questions. Next come validation-only component ablations and multiple rolling test windows;
-learned recurrent company memory should be considered only after the transparent model is understood.
+separate questions. Multiple pre-holdout windows now show that the ordering itself changes through time.
+Next come bounded causal recent-event tensors, validation-only component ablations, and a small temporal
+graph attention candidate; recurrent company memory should wait until the transparent models are understood.
 
 Project-specific audit and protocol: `wiki/this-project/evaluation.md`. Graph schema and temporal extension:
 `wiki/this-project/graph-design.md`. Visual applied studybook:
-`notebooks/02_project/06_temporal_role_gnn.ipynb`.
+`notebooks/02_project/06_temporal_role_gnn.ipynb`; temporal backtesting and attention decision:
+`notebooks/02_project/07_temporal_backtesting.ipynb`.
